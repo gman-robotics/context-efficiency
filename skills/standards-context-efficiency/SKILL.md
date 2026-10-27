@@ -21,13 +21,22 @@ Project-local standards for **context-efficiency** (Grok Bot context-efficiency 
 
 ## PR format
 
-Install body header order in every PR (matches `.github/pull_request_template.md`):
+Install `.github/PULL_REQUEST_TEMPLATE.md` from agent-bootstrap (`hub_pull_request_template.py copy`). Body order:
 
 1. `Tier:`
 2. `Models:`
 3. `Linear:` — `https://linear.app/...` issue URL or `N/A`
 4. `Summary:` — include `Refs GMA-###` when tied to Linear
 5. `Gates:` — CI / verify outcomes at head SHA, or `N/A (docs-only)`
+6. `## pstack (Poteto) principles cited`
+7. `## Verification evidence` — for this repo record `./scripts/check.sh` and/or `verify-context-efficiency-ci` (exit 0)
+8. `## Checklist` — includes `standards-context-efficiency` when that skill exists
+
+Verify template drift:
+
+```bash
+python3 /path/to/agent-bootstrap/scripts/hub_pull_request_template.py check --file .github/PULL_REQUEST_TEMPLATE.md
+```
 
 ## Issue format
 
