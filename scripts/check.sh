@@ -13,6 +13,8 @@ required=(
   AGENTS.md
   README.md
   docs/plan.md
+  docs/tool-mapping.md
+  docs/backends.md
   scripts/check.sh
   "${PR_TEMPLATE}"
   scripts/fixtures/hub-pr-template-tier-body.md
@@ -54,7 +56,9 @@ def strip_html_comments(text: str) -> str:
 
 
 def strip_fenced_code(text: str) -> str:
-    return re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    """Remove GitHub-flavored ``` and ~~~ fenced blocks."""
+    out = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    return re.sub(r"~~~.*?~~~", "", out, flags=re.DOTALL)
 
 
 def normalize_github_pr_template(text: str) -> str:
@@ -135,7 +139,7 @@ def link_check_surface(text: str) -> str:
 
 def check_internal_links(path: Path, text: str) -> None:
     surface = link_check_surface(text)
-    ref_defs = reference_definitions(text)
+    ref_defs = reference_definitions(surface)
 
     for m in re.finditer(r"\]\(([^)]+)\)", surface):
         target = m.group(1).strip()

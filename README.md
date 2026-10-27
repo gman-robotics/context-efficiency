@@ -31,7 +31,7 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 - **Skills**: Pure Markdown (SKILL.md). No runtime language required.
 - **Optional local MCP server**: **Rust**, **Go**, or **Bun TypeScript** only — never Node.js for TypeScript servers. Prefer single-binary Rust/Go or `bun build --compile` when using Bun.
 - Use `bunx` in `mcp.json` where a Bun-based package applies.
-- Existing OSS options to compose rather than rewrite: simple-memory-mcp, mini-memory-mcp, or similar SQLite+FTS servers.
+- Existing OSS options to compose rather than rewrite where they match runtime policy (see `docs/backends.md` — Node npm packages are out of policy; Bun/Rust/Go only).
 - Do **not** ship a custom server unless the domain interface cannot be mapped cleanly.
 
 ## How Other Agents Should Continue

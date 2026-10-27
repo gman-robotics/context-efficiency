@@ -1,97 +1,91 @@
 # Memory backends (setup overview)
 
-Context-efficiency skills assume a **pluggable** memory MCP. This document describes how to wire each backend class in Grok Bot. It does **not** ship server code or a default `mcp.json` pin.
+Pluggable memory MCP for context-efficiency skills. This doc does **not** ship `mcp.json` or pick a default package.
 
-> **Default backend: pending (GMA-425).** Tom’s decision on which local OSS MCP (if any) to recommend is still open. Until GMA-425 closes, treat every local package below as a **candidate**, not a project default.
+> **Default backend: pending ([GMA-425](https://linear.app/gman-personal-projects/issue/GMA-425)).** Until that issue closes, no recommended pin — especially not Node-based servers (see below).
 
 ## Shared requirements
 
-Whatever backend you use should support, at minimum:
+- **Write** short memories (`retain`)
+- **Search** by query (`recall`)
+- Clear **auth** and **data residency**
+- **Server runtime:** Rust, Go, or Bun TypeScript only for servers this project adopts — **never Node.js**
 
-- **Write** short text memories (for `retain`)
-- **Search** by natural-language query (for `recall`)
-- **Local or hosted** operation documented clearly (API keys, data residency)
-
-Handoffs (`handoff_write` / `handoff_read`) may use memory rows **or** markdown files under `/workspace/handoffs/` plus a `retain` pointer — see `docs/tool-mapping.md`.
-
-Skills stay backend-agnostic; only MCP configuration and mapping change.
+Handoffs may be file-first; see `docs/tool-mapping.md`.
 
 ---
 
-## Local open-source (SQLite / FTS MCP)
+## Local open-source (SQLite / FTS)
 
-**Role:** Zero API key; data stays on the Bot computer. Preferred **class** for the eventual default, pending GMA-425.
+**Role:** Local data, no hosted API key. Preferred **class** after GMA-425, subject to runtime policy.
 
-**Candidates (neutral — not ranked as default):**
+### Named packages (verified; not ranked)
 
-| Candidate | Typical transport | Notes |
-| --- | --- | --- |
-| `simple-memory-mcp` | `npx` / `bunx` / compiled binary | SQLite + search; verify tool names against `docs/tool-mapping.md` |
-| `mini-memory-mcp` | package-specific | Lightweight FTS variants exist in the ecosystem |
-| Other SQLite MCPs | varies | Same bar: add + search (+ list optional) |
+| Package | Upstream | Runtime | Policy |
+| --- | --- | --- | --- |
+| `simple-memory-mcp` (npm) | [chrisribe/simple-memory-mcp](https://github.com/chrisribe/simple-memory-mcp) | **Node** (`npx -y simple-memory-mcp`) | **Out of policy** |
+| `simple-memory-mcp` (Bun fork) | [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) | **Bun** (`bunx --bun github:mrorigo/simple-memory-mcp#main`) | **In-policy candidate** |
+| `mini-memory-mcp` | [utk09-ncl/mini-memory-mcp](https://github.com/utk09-ncl/mini-memory-mcp) | **Node** (≥ 20; `npm run start:mcp`) | **Out of policy** |
 
-**Setup pattern (illustrative — replace command after GMA-425):**
+Do not treat npm `simple-memory-mcp` and [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) as the same server — different runtimes, different tools ([tool-mapping.md](./tool-mapping.md)).
 
-1. Install the chosen MCP per its README (prefer **Bun** (`bunx`) or a **Rust/Go** binary when available; do not use Node.js for a custom TypeScript server in this project).
-2. Add an entry to the plugin’s `mcp.json` (future) or the Bot’s MCP settings with the server `command` / `args` or `url`.
-3. Confirm tools in the Bot UI; update the mapping table in `docs/tool-mapping.md` if names differ.
-4. Smoke-test: one `retain`-equivalent add, one `recall`-equivalent search.
+**After GMA-425 selects a backend:**
 
-**Data:** SQLite file path is usually configured via env var or server default — document the path in your Bot notes so handoffs and memory are backed up together.
+1. Install per upstream README (Bun/Rust/Go only for in-policy choices).
+2. Add MCP entry in plugin `mcp.json` or Bot settings.
+3. Confirm tools in the Bot UI match `docs/tool-mapping.md`.
+4. Smoke-test one retain-equivalent write and one recall-equivalent search.
 
 ---
 
 ## Mem0 (hosted MCP)
 
-**Role:** Hosted memory with MCP access; requires API key.
+**URL:** `https://mcp.mem0.ai/mcp` ([Mem0 MCP](https://docs.mem0.ai/platform/mem0-mcp))
 
-**Endpoint (from plan):** `https://mcp.mem0.ai/mcp`
+**Auth (either):**
 
-**Setup pattern:**
+- **OAuth** — client opens browser sign-in on first tool use ([Signing in](https://docs.mem0.ai/platform/mem0-mcp#signing-in))
+- **API key** — bearer token for headless clients (`Authorization: Token …` per Mem0 dashboard)
 
-1. Create a Mem0 account and API key per [Mem0 documentation](https://docs.mem0.ai/).
-2. Configure MCP in Grok Bot with the hosted URL and authentication header Mem0 specifies.
-3. Map tools using `docs/tool-mapping.md` (`add_memory` ↔ `retain`, `search_memories` ↔ `recall`).
-4. Smoke-test search/add; keep stored items short to protect context window.
+**Tools:** `add_memory`, `search_memories`, plus list/get/update/delete helpers ([tool table](https://docs.mem0.ai/platform/mem0-mcp#available-tools)).
 
-**Data:** Hosted; not on the Bot disk. Suitable when local SQLite is undesirable.
+**Scope:** Map domain scope to Mem0 `user_id` / `agent_id` / `app_id` / `run_id` — not a single `scope` enum.
+
+**Data:** Hosted in Mem0 account.
 
 ---
 
 ## Honcho
 
-**Role:** Session-oriented memory; may already be available as a Grok Bot plugin.
+**URL:** `https://mcp.honcho.dev` ([MCP integration](https://honcho.dev/docs/v3/guides/integrations/mcp), [Grok Bot](https://honcho.dev/docs/v3/guides/integrations/grok-bot))
 
-**Setup pattern:**
+**Auth:** OAuth through the Grok plugin connect flow, or API key on a custom MCP connector.
 
-1. Install or enable the Honcho plugin (or self-hosted Honcho MCP if you operate one).
-2. List MCP tools in the Bot; align names with `docs/tool-mapping.md` Honcho section.
-3. Define how `scope` maps to Honcho sessions, users, or peers.
-4. Smoke-test recall/retain equivalents before enabling context-efficiency skills.
+**Tools:** Workspace/session/peer tools such as `search`, `add_messages_to_session`, `chat` ([MCP tree](https://github.com/plastic-labs/honcho/tree/main/mcp)). Map domain operations per `docs/tool-mapping.md`; no dedicated handoff tools.
 
-**Data:** Depends on Honcho deployment (plugin vs self-hosted).
+**Data:** Honcho cloud (or self-hosted if you operate Honcho yourself).
 
 ---
 
-## Choosing a backend (decision record)
+## Decision record
 
-| Decision | Status | Owner / tracker |
-| --- | --- | --- |
-| Default local MCP package | **Pending** | [GMA-425](https://linear.app/gman-personal-projects/issue/GMA-425) |
-| Thin domain wrapper vs mapping-only | Open | `docs/plan.md` open questions |
-| Mem0 / Honcho as documented alternates | Documented | This file + `tool-mapping.md` |
+| Decision | Status |
+| --- | --- |
+| Default local MCP package | **Pending** — GMA-425 |
+| Node-based `simple-memory-mcp` / `mini-memory-mcp` as project default | **Rejected** by runtime policy |
+| Mem0 / Honcho as documented alternates | Documented |
 
-Do not merge plugin `mcp.json` with a pinned default until GMA-425 resolves.
+Do not merge a pinned default `mcp.json` until GMA-425 resolves.
 
 ---
 
-## Security and ops
+## Security
 
-- Never commit API keys; use Bot secret / env configuration.
-- Prefer least-privilege keys for hosted backends.
-- For local SQLite, avoid sharing the DB file across untrusted Bots without scope tags.
+- No API keys in git; use Bot secrets / env.
+- Least-privilege Mem0/Honcho keys.
+- Local SQLite: scope tags if multiple Bots share a DB file.
 
 ## Related docs
 
-- `docs/tool-mapping.md` — domain tool mapping per backend
-- `docs/plan.md` — architecture and constraints
+- `docs/tool-mapping.md` — per-tool mapping with sources
+- `docs/plan.md` — architecture

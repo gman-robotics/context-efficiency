@@ -1,12 +1,12 @@
 # Tool mapping (domain → MCP backends)
 
-Skills in this plugin call a **small domain surface**. Each memory backend exposes different MCP tool names and argument shapes. Adapters (documentation + user `mcp.json` configuration, or a thin wrapper server later) translate between them.
+Skills call a **stable domain surface** (`docs/plan.md`). Each backend exposes different MCP tool names. Adapters (this doc + user `mcp.json`, or a thin Rust/Go/Bun wrapper later) translate between them.
 
-**Default backend choice:** **Pending** — tracked in [GMA-425](https://linear.app/gman-personal-projects/issue/GMA-425). Do not assume a pinned local MCP package until that issue closes.
+**Default backend:** **Pending** — [GMA-425](https://linear.app/gman-personal-projects/issue/GMA-425). Do not pin a package in `mcp.json` until that issue closes.
+
+**Server policy (this repo):** Custom or default MCP servers must be **Rust**, **Go**, or **Bun TypeScript** — **never Node.js**. Several well-known SQLite MCPs on npm are **Node**; they are documented below for comparison only and are **out of policy** for this project.
 
 ## Domain tools (what skills expect)
-
-These names are the stable contract from `docs/plan.md`:
 
 | Domain tool | Purpose | Arguments (conceptual) | Returns |
 | --- | --- | --- | --- |
@@ -15,75 +15,122 @@ These names are the stable contract from `docs/plan.md`:
 | `handoff_write` | Persist a structured handoff | `handoff`, `scope` | `pathOrId` |
 | `handoff_read` | Load latest handoff for a scope | `scope` | `Handoff` or null |
 
-Types:
+Types: **Scope** `bot` \| `shared` \| `routine:<name>` \| `task:<id>`; **MemoryItem** and **Handoff** as in `docs/plan.md`.
 
-- **Scope:** `bot` \| `shared` \| `routine:<name>` \| `task:<id>`
-- **MemoryItem:** `id`, short `text`, `tags`, `importance` (1–3), `scope`, `createdAt`
-- **Handoff:** `goal`, `openItems`, `decisions`, `filePaths`, `nextSteps`
+---
 
-Skills must not call backend-specific tool names directly. Only the MCP layer (or mapping doc the user follows) changes per backend.
+## Named local packages (verified from upstream README)
 
-## Mapping by backend class
+### `simple-memory-mcp` (npm / [chrisribe/simple-memory-mcp](https://github.com/chrisribe/simple-memory-mcp)) — **Node — out of policy**
 
-### Local open-source SQLite MCP (candidate — not selected)
+- **Runtime:** Node.js; start with `npx -y simple-memory-mcp` ([README](https://github.com/chrisribe/simple-memory-mcp#-quick-start)).
+- **Not in policy** for context-efficiency defaults (Node server). Listed so docs do not confuse it with the Bun fork below.
 
-Typical OSS servers expose **add**, **search**, and **list** style tools rather than `recall` / `retain`. Handoffs are often **not** first-class; store JSON in a tagged memory row or a file path reference.
+**Published MCP tools** ([README § MCP Tools](https://github.com/chrisribe/simple-memory-mcp#%EF%B8%8F-mcp-tools)):
 
-| Domain | Typical OSS MCP pattern | Notes |
+| Domain | Upstream tool | Notes |
 | --- | --- | --- |
-| `recall` | `search_memories` / `search` / `query` with text + limit | Map `scope` to tags or metadata filters if supported; otherwise filter in skill policy after search |
-| `retain` | `add_memory` / `add` / `store` with text + metadata | Map `tags` + `scope` to server metadata; map `importance` to priority field or tag |
-| `handoff_write` | `add_memory` with tag `handoff` + JSON body, or write file under `/workspace/handoffs/` and `retain` the path | Prefer file + `retain` when server has no structured handoff type |
-| `handoff_read` | `search` for tag `handoff` + scope, or read known file path from last `retain` | May require convention: one handoff id per scope |
+| `recall` | `memory-graphql` | GraphQL `Query.memories(query, tags, limit)` inside the tool |
+| `retain` | `memory-graphql` | GraphQL `Mutation.store(content, tags)` |
+| `handoff_write` | **none** | No handoff tool; use file under `/workspace/handoffs/` + `store` summary, or tags on `store` |
+| `handoff_read` | **none** | No handoff tool; `memories`/`memory` queries by tag convention only |
 
-**Candidates (neutral list, no default):** community SQLite + FTS MCPs often named along the lines of `simple-memory-mcp`, `mini-memory-mcp`, or similar; evaluate against GMA-425 criteria (zero API key, local data, search + add, Bun/Rust/Go packaging).
+Also: `export-memory`, `import-memory` (backup; not domain tools).
 
-### Mem0 (hosted MCP)
+### `simple-memory-mcp` (Bun — [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp)) — **Bun — in-policy candidate**
 
-Documented endpoint: `https://mcp.mem0.ai/mcp` (API key in headers per Mem0 docs).
+- **Runtime:** Bun; `bunx --bun github:mrorigo/simple-memory-mcp#main` ([README](https://github.com/mrorigo/simple-memory-mcp#run-from-github-with-bunx)).
+- **Distinct repo** from the npm Node package above (same name, different implementation).
 
-| Domain | Mem0-oriented MCP tool | Notes |
+**Published MCP tools** ([README § Tools](https://github.com/mrorigo/simple-memory-mcp#tools)):
+
+| Domain | Upstream tool | Notes |
 | --- | --- | --- |
-| `recall` | `search_memories` (or equivalent search tool) | Pass `query`; apply `limit`; map `scope` to user/session/metadata filters if exposed |
-| `retain` | `add_memory` | Map `text`, `tags`, `importance`, `scope` into Mem0 metadata fields |
-| `handoff_write` | `add_memory` with structured JSON + type tag, or external file + `add_memory` summary | Same file-first fallback as local |
-| `handoff_read` | `search_memories` filtered by handoff tag / metadata | Verify exact tool names in Mem0 MCP schema at install time |
+| `recall` | `search_memory` | `query`, optional `limit` |
+| `retain` | `ingest_document` | Requires `filename` (path to UTF-8 file), not inline `text` — awkward for `retain`; wrapper or write-temp-file convention |
+| `handoff_write` | **none** | File-first handoff + `ingest_document` if needed |
+| `handoff_read` | **none** | No read-by-scope; `search_memory` only |
 
-### Honcho
+Also: `scrub_document` (delete from DB by filename; not domain).
 
-Use the Honcho Grok Bot plugin or self-hosted Honcho MCP (see `docs/backends.md`). Tool names vary by deployment; treat the table below as **intent**, then reconcile with the live tool list in the Bot’s MCP panel.
+### `mini-memory-mcp` ([utk09-ncl/mini-memory-mcp](https://github.com/utk09-ncl/mini-memory-mcp)) — **Node — out of policy**
 
-| Domain | Honcho-oriented pattern | Notes |
+- **Runtime:** Node.js ≥ 20; `npm start` / `npm run start:mcp` ([README](https://github.com/utk09-ncl/mini-memory-mcp#prerequisites)).
+- **Not in policy** (Node server).
+
+**Published MCP tools** ([README § Available MCP tools](https://github.com/utk09-ncl/mini-memory-mcp#available-mcp-tools)):
+
+| Domain | Upstream tool | Notes |
 | --- | --- | --- |
-| `recall` | Session/user memory search APIs exposed as MCP tools | Map `scope` to Honcho session or peer identifiers |
-| `retain` | Add or append memory on a session/user | Keep items short; align with Honcho’s message/memory model |
-| `handoff_write` | Persist handoff as memory blob or linked resource | Prefer file path + short `retain` if structured handoff is awkward |
-| `handoff_read` | Fetch by scope/session | Same conventions as local for tag `handoff` |
+| `recall` | `memory_search` | Full-text search |
+| `retain` | `memory_create` | `title`, `content`, optional `tags` — map `text` → `content`, encode `scope`/`importance` in tags |
+| `handoff_write` | **none** | Use `memory_create` with handoff tags or file-first |
+| `handoff_read` | **none** | `memory_read` needs `id`; no scope-level handoff type |
 
-### Other MCP servers
+Also: `memory_list`, `memory_read`, `memory_update`, `memory_delete`.
 
-Any MCP that offers **search + add** (and optionally list) can back `recall` / `retain` with the same adapter ideas. Handoffs may always be **file-first** (`handoff_write` → markdown under `/workspace/handoffs/` + `retain` pointer) if the server has no handoff type.
+### In-policy direction (GMA-425)
 
-## Adapter strategies (no custom server vs thin wrapper)
+Prefer a **Rust**, **Go**, or **Bun TypeScript** MCP with add + search (and optional list). The Bun [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) fork is the only named candidate above that matches the runtime rule; its `ingest_document` shape may still require a thin adapter for `retain`.
 
-| Strategy | When to use | Tradeoff |
+---
+
+## Mem0 (hosted MCP)
+
+- **URL:** `https://mcp.mem0.ai/mcp` ([Mem0 MCP docs](https://docs.mem0.ai/platform/mem0-mcp)).
+- **Auth:** Browser **OAuth** sign-in through the client, **or** API key as bearer token for headless/CI ([Signing in](https://docs.mem0.ai/platform/mem0-mcp#signing-in)).
+
+**Published MCP tools** ([Available tools](https://docs.mem0.ai/platform/mem0-mcp#available-tools)):
+
+| Domain | Mem0 tool | Notes |
 | --- | --- | --- |
-| **Mapping doc only** | Backend tools are close; skills use documented aliases in `mcp.json` tool exposure | User/Bot must configure correct server; skill text references logical names |
-| **Thin wrapper MCP** (Rust / Go / Bun TS) | Need exact domain tool names or unified `scope` handling | Small binary; still compose OSS storage where possible |
+| `recall` | `search_memories` | Semantic search; scope maps to `user_id` / `agent_id` / `app_id` / `run_id` filters — not a generic `scope` string |
+| `retain` | `add_memory` | Text/conversation; use `metadata` object for extra fields — **no** `tags` or `importance` parameter names on the tool |
+| `handoff_write` | **none** | No handoff tool; convention: `add_memory` with structured JSON in text/metadata, or file-first |
+| `handoff_read` | **none** | No handoff tool; `get_memory` / `search_memories` by metadata convention only |
 
-Whether this repo needs a wrapper is **open** (see `docs/plan.md` open questions). GMA-425 decides the default backend; mapping stays valid regardless.
+Other tools (`get_memories`, `update_memory`, `delete_memory`, `list_entities`, …) are administrative; not domain aliases.
 
-## Verification hooks
+---
 
-When a backend is selected (GMA-425):
+## Honcho (hosted MCP)
 
-1. Call `recall` with a known seeded string; assert ≤ `limit` items and short `text`.
-2. Call `retain` then `recall`; assert round-trip.
-3. `handoff_write` / `handoff_read` round-trip for one scope (or file path + `retain` convention).
+- **URL:** `https://mcp.honcho.dev` ([Grok Bot integration](https://honcho.dev/docs/v3/guides/integrations/grok-bot), [MCP guide](https://honcho.dev/docs/v3/guides/integrations/mcp)).
+- **Auth:** OAuth via client connect flow, or API key bearer for custom connector ([Grok Bot doc](https://honcho.dev/docs/v3/guides/integrations/grok-bot#connecting-without-the-plugin)).
 
-Until then, `./scripts/check.sh` validates these docs and repo layout only — not live MCP calls.
+Tool list from [Honcho MCP server README](https://github.com/plastic-labs/honcho/tree/main/mcp) and [MCP instructions](https://raw.githubusercontent.com/plastic-labs/honcho/refs/heads/main/mcp/instructions.md). Reconcile with the live tool list in your Bot after connect.
+
+| Domain | Honcho tool(s) | Notes |
+| --- | --- | --- |
+| `recall` | `search` | Semantic search; optional peer/session params. Also `chat`, `query_conclusions`, `get_representation` for read paths |
+| `retain` | `add_messages_to_session` | Append user/assistant messages to a session; durable facts may use `create_conclusions` |
+| `handoff_write` | **none** | No handoff tool; file-first under `/workspace/handoffs/` + session messages or conclusions |
+| `handoff_read` | **none** | No handoff tool; `inspect_session` / `get_session_context` are session introspection, not `Handoff` shape |
+
+Map plugin **scope** to Honcho workspace / peer / session naming (see Grok Bot doc table).
+
+---
+
+## File-first handoffs (all backends)
+
+When `handoff_write` / `handoff_read` map to **none** on a backend:
+
+1. Write markdown to `/workspace/handoffs/<scope-slug>.md`.
+2. `retain` a one-line pointer (path + goal).
+3. `handoff_read` → read that file (and optional `recall` for the pointer).
+
+---
+
+## Adapter strategies
+
+| Strategy | When | Tradeoff |
+| --- | --- | --- |
+| Mapping doc + user config | Tool names close enough | No extra binary |
+| Thin wrapper (Rust / Go / Bun TS) | Need domain tool names or inline `retain` | Maintained adapter |
+
+GMA-425 selects the default backend; this mapping stays valid for alternates.
 
 ## Related docs
 
-- `docs/backends.md` — setup paths per backend class (no default pin)
-- `docs/plan.md` — domain model and plugin structure
+- `docs/backends.md` — setup per backend class
+- `docs/plan.md` — architecture
