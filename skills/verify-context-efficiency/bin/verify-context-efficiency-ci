@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+cd "${REPO_ROOT}"
+
+ARTIFACTS="${VERIFY_CE_ARTIFACTS_DIR:-/tmp/verify-context-efficiency/ci-$$}"
+mkdir -p "${ARTIFACTS}"
+mkdir -p .metrics 2>/dev/null || true
+echo "N/A (no ub-mode gates; Markdown repo)" > .metrics/verify-ub-outcome.txt
+
+skills/verify-context-efficiency/bin/verify-context-efficiency-doctor \
+  2>&1 | tee "${ARTIFACTS}/doctor.transcript"
+
+./scripts/check.sh 2>&1 | tee "${ARTIFACTS}/check.transcript"
+
+echo "verify-context-efficiency-ci: OK (artifacts=${ARTIFACTS})"

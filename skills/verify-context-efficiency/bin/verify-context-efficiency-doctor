@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || true)"
+if [[ -z "${REPO_ROOT}" ]]; then
+  echo "verify-context-efficiency doctor: FAIL — not inside a git checkout"
+  exit 1
+fi
+cd "${REPO_ROOT}"
+
+for path in AGENTS.md README.md docs/plan.md scripts/check.sh skills/verify-context-efficiency/SKILL.md; do
+  if [[ ! -f "${path}" ]]; then
+    echo "verify-context-efficiency doctor: FAIL — missing ${path}"
+    exit 1
+  fi
+done
+
+if ! command -v python3 >/dev/null 2>&1; then
+  echo "verify-context-efficiency doctor: FAIL — python3 not on PATH"
+  exit 1
+fi
+
+if [[ ! -x "${REPO_ROOT}/scripts/check.sh" ]]; then
+  echo "verify-context-efficiency doctor: FAIL — scripts/check.sh not executable"
+  exit 1
+fi
+
+for helper in skills/verify-context-efficiency/bin/*; do
+  if [[ ! -x "${helper}" ]]; then
+    echo "verify-context-efficiency doctor: FAIL — not executable: ${helper}"
+    exit 1
+  fi
+done
+
+echo "verify-context-efficiency doctor: OK (repo=${REPO_ROOT})"
