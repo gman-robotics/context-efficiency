@@ -93,7 +93,7 @@ Optional backends (documented, not shipped):
 - `handoff_write(handoff: Handoff, scope: Scope) → pathOrId`
 - `handoff_read(scope: Scope) → Handoff | null`
 
-**Tech note**: Prefer Rust or Go for any custom thin wrapper (single static binary, runs natively on Bot computer). Prefer composing existing OSS first.
+**Tech note**: Prefer Rust or Go for any custom thin wrapper (single static binary, runs natively on Bot computer). Prefer composing existing OSS first. If implementing a custom MCP server in TypeScript, prefer **Bun** over Node.js (faster startup, single-binary option via `bun build --compile`, better native performance).
 
 ### 2. Context Hygiene Skill (`skills/context-hygiene/SKILL.md`)
 
@@ -129,7 +129,7 @@ For any routine the Bot creates or runs:
 
 ## Backend Support
 
-- **Local OSS default**: `mcp.json` uses an `npx` command for a lightweight SQLite MCP. Zero config, data stays on the Bot’s computer.
+- **Local OSS default**: `mcp.json` uses a command for a lightweight SQLite MCP. Zero config, data stays on the Bot’s computer. Prefer Bun-based packages where available (`bunx` or compiled binary).
 - **Mem0**: Replace the server entry with the hosted URL + API key header. Mapping table shows `add_memory` ↔ `retain`, `search_memories` ↔ `recall`.
 - **Honcho**: Use the existing Honcho Grok Bot plugin or its MCP; same mapping.
 - Skills contain no backend-specific code. Only the mapping doc and the user’s MCP config change.
@@ -144,8 +144,8 @@ For any routine the Bot creates or runs:
 
 ## Open Questions
 
-- Exact local MCP package to pin as default (simple-memory-mcp vs mini-memory-mcp vs other).
-- Whether a thin Rust/Go adapter is needed for perfect domain tool names, or if mapping docs are sufficient.
+- Exact local MCP package to pin as default (simple-memory-mcp vs mini-memory-mcp vs other). Prefer Bun-compatible if writing TypeScript.
+- Whether a thin Rust/Go/Bun adapter is needed for perfect domain tool names, or if mapping docs are sufficient.
 - License and org contribution guidelines.
 
 This design keeps the live transcript short by design, moves continuity into selective external storage, and works within current Grok Bot constraints.
