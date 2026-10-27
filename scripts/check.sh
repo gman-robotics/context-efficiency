@@ -13,6 +13,8 @@ required=(
   AGENTS.md
   README.md
   docs/plan.md
+  docs/tool-mapping.md
+  docs/backends.md
   scripts/check.sh
   "${PR_TEMPLATE}"
   scripts/fixtures/hub-pr-template-tier-body.md
@@ -54,7 +56,9 @@ def strip_html_comments(text: str) -> str:
 
 
 def strip_fenced_code(text: str) -> str:
-    return re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    """Remove GitHub-flavored ``` and ~~~ fenced blocks."""
+    out = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    return re.sub(r"~~~.*?~~~", "", out, flags=re.DOTALL)
 
 
 def normalize_github_pr_template(text: str) -> str:
@@ -77,8 +81,13 @@ HUB_TEMPLATE_PATHS = frozenset(
 )
 
 
+def strip_inline_code(text: str) -> str:
+    tick = "\u0060"
+    return re.sub(tick + r"[^" + tick + r"]*" + tick, "", text)
+
+
 def check_placeholders(path: Path, text: str) -> None:
-    stripped = strip_html_comments(strip_fenced_code(text))
+    stripped = strip_inline_code(strip_html_comments(strip_fenced_code(text)))
     if path in HUB_TEMPLATE_PATHS:
         for lit in HUB_PR_LITERALS:
             stripped = stripped.replace(lit, "")
@@ -123,10 +132,16 @@ def reference_definitions(text: str) -> dict[str, str]:
     return defs
 
 
-def check_internal_links(path: Path, text: str) -> None:
-    ref_defs = reference_definitions(text)
+def link_check_surface(text: str) -> str:
+    """Markdown body for link checks: no HTML comments or fenced code blocks."""
+    return strip_fenced_code(strip_html_comments(text))
 
-    for m in re.finditer(r"\]\(([^)]+)\)", text):
+
+def check_internal_links(path: Path, text: str) -> None:
+    surface = link_check_surface(text)
+    ref_defs = reference_definitions(surface)
+
+    for m in re.finditer(r"\]\(([^)]+)\)", surface):
         target = m.group(1).strip()
         resolved = resolve_link_target(path, target)
         if resolved is None:
@@ -134,7 +149,7 @@ def check_internal_links(path: Path, text: str) -> None:
         if not resolved.exists():
             fail(f"{path}: broken link {target} (from {path})")
 
-    for m in re.finditer(r"\[([^\]]+)\]\[([^\]]*)\]", text):
+    for m in re.finditer(r"\[([^\]]+)\]\[([^\]]*)\]", surface):
         label, ref_id = m.group(1), m.group(2).strip()
         key = (ref_id or label).lower()
         if key not in ref_defs:
@@ -146,9 +161,22 @@ def check_internal_links(path: Path, text: str) -> None:
         if not resolved.exists():
             fail(f"{path}: broken reference link [{key}] -> {ref_defs[key]} (from {path})")
 
+    for m in re.finditer(r"(?<!!)\[([^\]]+)\](?!\[|\()", surface):
+        label = m.group(1).strip()
+        key = label.lower()
+        if key not in ref_defs:
+            continue
+        resolved = resolve_link_target(path, ref_defs[key])
+        if resolved is None:
+            continue
+        if not resolved.exists():
+            fail(
+                f"{path}: broken shortcut reference link [{label}] -> {ref_defs[key]} (from {path})"
+            )
+
 
 def check_pr_template_headers(text: str) -> None:
-    visible = strip_html_comments(text)
+    visible = strip_fenced_code(strip_html_comments(text))
     headers = ["Tier:", "Models:", "Linear:", "Summary:", "Gates:"]
     positions: list[int] = []
     for h in headers:

@@ -1,0 +1,36 @@
+name: Task
+description: Feature, docs, or maintenance work
+title: "[Task]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use for non-bug work (skills, docs, CI). Link Linear issues when applicable.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem / goal
+      description: What should change and why?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description: What is explicitly out of scope?
+    validations:
+      required: false
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification plan
+    validations:
+      required: true
