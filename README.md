@@ -30,6 +30,7 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 
 - **Skills**: Pure Markdown (SKILL.md). No runtime language required.
 - **Optional local MCP server**: Prefer **Rust** (single static binary, excellent MCP ecosystem, runs natively on the Bot computer with zero dependencies) or **Go** (also excellent single-binary story). Python is acceptable for rapid prototyping but heavier.
+- **If using TypeScript**: Prefer **Bun** over Node.js (faster startup, native performance, and `bun build --compile` produces a single binary). Use `bunx` in `mcp.json` where possible.
 - Existing OSS options to compose rather than rewrite: simple-memory-mcp, mini-memory-mcp, or similar SQLite+FTS servers.
 - Do **not** ship a custom server unless the domain interface cannot be mapped cleanly.
 
