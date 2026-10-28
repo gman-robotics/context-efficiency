@@ -4,6 +4,7 @@ package engram_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,7 +12,6 @@ import (
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/child"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/scope"
 )
 
 func TestRealEngramV360(t *testing.T) {
@@ -58,14 +58,9 @@ func TestRealEngramV360(t *testing.T) {
 	if err != nil || id == "" {
 		t.Fatalf("retain %v id %s", err, id)
 	}
-	tok, _ := scope.Token("bot")
-	rawSearch, searchErr, isSearchErr := client.CallTool(ctx, "mem_search", map[string]interface{}{
-		"query": tok + " alpha",
-		"limit": 5,
-	})
 	items, err = svc.Recall(ctx, "alpha", "bot", 5)
 	if err != nil || len(items) != 1 || items[0].Text != "round-trip alpha" {
-		t.Fatalf("recall %+v err %v search=%q searchErr=%v isSearchErr=%v", items, err, rawSearch, searchErr, isSearchErr)
+		t.Fatalf("recall %+v err %v", items, err)
 	}
 	if items[0].CreatedAt == "" {
 		t.Fatal("createdAt empty")
@@ -88,5 +83,91 @@ func TestRealEngramV360(t *testing.T) {
 	_, err = svc.HandoffWrite(ctx, domain.Handoff{Goal: "g", OpenItems: []string{"<private>x</private>"}}, "bot")
 	if err == nil {
 		t.Fatal("handoff with private must error")
+	}
+}
+
+// Tom required fix #3: many routine-scope rows must not crowd bot-scope recall out of FTS window.
+func TestBotRecallAfterManyRoutineRows(t *testing.T) {
+	bin := os.Getenv("ENGRAM_BIN")
+	if bin == "" {
+		t.Skip("ENGRAM_BIN not set")
+	}
+	dataDir := t.TempDir()
+	sentinel := filepath.Join(dataDir, "sentinel-home")
+	_ = os.MkdirAll(sentinel, 0o700)
+	project := "ceci-routine-window"
+	env, err := child.ChildEnv(child.Config{
+		DataDir:      dataDir,
+		Project:      project,
+		SentinelHome: sentinel,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	client, err := child.StartClient(ctx, bin, project, env, sentinel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	svc := &adaptermap.Service{Client: client}
+
+	const routineRows = 21
+	for i := 0; i < routineRows; i++ {
+		scopeStr := fmt.Sprintf("routine:row%d", i)
+		text := fmt.Sprintf("routine filler %d noise", i)
+		if _, err := svc.Retain(ctx, text, nil, 1, scopeStr); err != nil {
+			t.Fatalf("routine retain %d: %v", i, err)
+		}
+	}
+	const botMarker = "botwindowunique"
+	if _, err := svc.Retain(ctx, botMarker+" fact", nil, 2, "bot"); err != nil {
+		t.Fatal(err)
+	}
+	items, err := svc.Recall(ctx, botMarker, "bot", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 1 || items[0].Text != botMarker+" fact" {
+		t.Fatalf("bot recall after %d routine rows: %+v err %v", routineRows, items, err)
+	}
+}
+
+func TestHandoffUpsertSameScope(t *testing.T) {
+	bin := os.Getenv("ENGRAM_BIN")
+	if bin == "" {
+		t.Skip("ENGRAM_BIN not set")
+	}
+	dataDir := t.TempDir()
+	sentinel := filepath.Join(dataDir, "sentinel-home")
+	_ = os.MkdirAll(sentinel, 0o700)
+	project := "ceci-handoff-upsert"
+	env, err := child.ChildEnv(child.Config{
+		DataDir:      dataDir,
+		Project:      project,
+		SentinelHome: sentinel,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	ctx := context.Background()
+	client, err := child.StartClient(ctx, bin, project, env, sentinel)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer client.Close()
+	svc := &adaptermap.Service{Client: client}
+
+	id1, err := svc.HandoffWrite(ctx, domain.Handoff{Goal: "first"}, "bot")
+	if err != nil || id1 == "" {
+		t.Fatalf("first handoff: %v id %s", err, id1)
+	}
+	id2, err := svc.HandoffWrite(ctx, domain.Handoff{Goal: "second"}, "bot")
+	if err != nil || id2 == "" {
+		t.Fatalf("second handoff: %v id %s", err, id2)
+	}
+	h, err := svc.HandoffRead(ctx, "bot")
+	if err != nil || h == nil || h.Goal != "second" {
+		t.Fatalf("handoff_read %+v err %v", h, err)
 	}
 }
