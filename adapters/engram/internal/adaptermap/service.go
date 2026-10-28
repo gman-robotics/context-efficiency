@@ -114,6 +114,9 @@ func (s *Service) Recall(ctx context.Context, query string, scopeStr string, lim
 			Scope:      rb.Scope,
 			CreatedAt:  createdAt,
 		})
+		if len(out) >= limit {
+			break
+		}
 	}
 	return out, nil
 }

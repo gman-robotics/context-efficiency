@@ -2,6 +2,7 @@ package adaptermap
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -130,6 +131,45 @@ func TestHandoffBodyMutationError(t *testing.T) {
 }
 
 // expose saveRec for tests in same package - fake uses unexported type; use LastSaveTitle only
+
+func TestRecallTrimsToCallerLimit(t *testing.T) {
+	fake := &child.FakeEngram{}
+	svc := &Service{Client: fake}
+	const total = 8
+	for i := 0; i < total; i++ {
+		text := fmt.Sprintf("limitclip item %d", i)
+		if _, err := svc.Retain(context.Background(), text, nil, 1, "bot"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	const want = 3
+	items, err := svc.Recall(context.Background(), "limitclip", "bot", want)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != want {
+		t.Fatalf("recall len %d want %d", len(items), want)
+	}
+}
+
+func TestRecallDefaultLimit(t *testing.T) {
+	fake := &child.FakeEngram{}
+	svc := &Service{Client: fake}
+	const total = 7
+	for i := 0; i < total; i++ {
+		text := fmt.Sprintf("defaultlimit seed %d", i)
+		if _, err := svc.Retain(context.Background(), text, nil, 1, "bot"); err != nil {
+			t.Fatal(err)
+		}
+	}
+	items, err := svc.Recall(context.Background(), "defaultlimit", "bot", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(items) != 5 {
+		t.Fatalf("default limit recall len %d want 5", len(items))
+	}
+}
 
 func TestSearchNoResultsArray(t *testing.T) {
 	fake := &child.FakeEngram{}
