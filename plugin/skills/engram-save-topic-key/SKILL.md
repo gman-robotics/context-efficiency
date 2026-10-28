@@ -24,7 +24,7 @@ Before calling `retain` after a decision, outcome, or short fact that should sur
 
 | Field | Value |
 | --- | --- |
-| `title` | `<scope-token>` + space + first **40** characters of trimmed `text` |
+| `title` | `<scope-token>` + space + first **40 bytes** of trimmed `text` (Go `len` / byte clip, not Unicode runes) |
 | `content` | JSON **`RetainBody`**: `text`, `tags`, `importance`, `scope` (domain scope string) |
 | `type` | `manual` |
 | `scope` (Engram field) | always **`project`** (not the domain scope name) |
@@ -37,9 +37,9 @@ After save, the adapter re-reads the observation and errors if stored JSON diffe
 
 Content must survive Engram storage rules **unchanged**:
 
-1. **Private blocks:** Any `<private>...</private>` (case-insensitive) in `text` → error (`content would be redacted by storage rules`). Strip secrets before calling; never rely on redaction.
-2. **50 000-byte cap:** Prepared body/title must not require truncation or redaction. If JSON would exceed Engram’s **50 000**-byte stored limit, the adapter rejects the call (`content would be redacted or truncated by storage rules`).
-3. **Adapter size guards:** `text` over **8000** characters or marshaled retain JSON over **40000** bytes → error.
+1. **Private blocks:** Any **single-line** `<private>...</private>` (case-insensitive) in `text` → error (`content would be redacted by storage rules`). The check uses a pattern where `.` does **not** cross newlines, so multiline private tags are not detected here — still never store secrets in memory.
+2. **50 000-byte cap:** After the adapter’s **40 000-byte** marshaled JSON guard (and retain **`text` > 8000** guard), prepared body/title must not require truncation or redaction at Engram’s **50 000**-byte stored limit, or the call errors (`content would be redacted or truncated by storage rules`).
+3. **Adapter size guards (run before the 50 000-byte path):** `text` over **8000** bytes or marshaled retain JSON over **40000** bytes → error (`text too large` / `retain body too large`).
 
 Keep `text` to **1–3 sentences** of distilled fact; put long material in files and retain a pointer line.
 

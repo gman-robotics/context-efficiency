@@ -12,7 +12,7 @@ Pluggable memory MCP for context-efficiency skills.
 | Domain MCP tools | `recall`, `retain`, `handoff_write`, `handoff_read` |
 | Child process | `engram mcp --project "<name>" --tools=mem_save,mem_search,mem_get_observation` |
 | Pin | `adapters/engram/pin.json` (archive URLs + sha256; `binary_sha256` on release artifacts) |
-| Manifest / `mcp.json` | GMA-428 (not in GMA-429) |
+| Manifest / `mcp.json` | `.grok-plugin/plugin.json`, `.cursor-plugin/plugin.json`, root `mcp.json` (GMA-428) |
 
 **Runtime policy:** Rust, Go, or Bun TypeScript servers only — **never Node.js**. Legacy Node SQLite MCPs remain documented as out of policy in `docs/tool-mapping.md`.
 
@@ -35,6 +35,8 @@ The adapter spawns the child with an **explicit** environment: `ENGRAM_DATA_DIR`
 **Mapping:** `docs/tool-mapping.md` (domain ↔ `mem_save` / `mem_search` / `mem_get_observation`).
 
 **Verify:** `./scripts/check-go.sh` (unit tests always; integration when `ENGRAM_BIN` points at pinned v3.6.0).
+
+**Plugin MCP start:** Root `mcp.json` runs `plugin/bin/run-context-efficiency-mcp.sh`, which **exec**s a pre-built `adapters/engram/context-efficiency-mcp` (no engram download at process start). Set absolute `ENGRAM_DATA_DIR`, `ENGRAM_PROJECT`, and `ENGRAM_BIN` in `mcp.json` (or install `engram` beside the adapter). Build the adapter with `(cd adapters/engram && go build -o context-efficiency-mcp ./cmd/context-efficiency-mcp/)`.
 
 ---
 

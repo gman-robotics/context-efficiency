@@ -39,14 +39,15 @@ Use a small `limit` (3–5) in chat to keep context lean. Use a higher limit (up
 - Keeps rows whose **title’s first whitespace-separated field equals the scope token**.
 - **Skips** rows whose title starts with **`handoff`** (handoffs are loaded via `handoff_read`, not `recall`).
 - Fetches each kept id with `mem_get_observation` and unmarshals the stored `RetainBody` JSON into `MemoryItem`.
-- **`unknown_project`** from the child → empty array `[]`, not an error.
+- **`unknown_project`** from the child → JSON array **`[]`**, not an error.
+- **No in-scope hits** after filtering → JSON **`null`** (not `[]`). **`unknown_project`** and **`null`** are both “nothing to inject”; only `unknown_project` is guaranteed to be `[]`.
 
 ## Agent rules
 
 - Pass a **short, task-specific `query`** derived from the user message; do not paste long logs into `query`.
 - Set **`scope`** explicitly when facts may live under `shared`, `routine:<name>`, or `task:<id>`; omitting `scope` is **`bot`** only.
 - Do not use `recall` to load handoffs; use `handoff_read` with the same scope.
-- Treat an empty array as “nothing durable matched,” not as MCP failure.
+- Treat **`null`** or **`[]`** as “nothing durable matched,” not as MCP failure.
 
 ## Related
 

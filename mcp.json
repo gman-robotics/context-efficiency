@@ -1,0 +1,15 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "context-efficiency": {
+      "type": "stdio",
+      "command": "bash",
+      "args": ["plugin/bin/run-context-efficiency-mcp.sh"],
+      "env": {
+        "ENGRAM_DATA_DIR": "/absolute/path/to/engram-data",
+        "ENGRAM_PROJECT": "context-efficiency",
+        "ENGRAM_BIN": "/absolute/path/to/engram"
+      }
+    }
+  }
+}

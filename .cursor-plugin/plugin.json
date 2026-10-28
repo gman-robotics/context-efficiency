@@ -1,0 +1,24 @@
+{
+  "name": "context-efficiency",
+  "displayName": "Context Efficiency",
+  "description": "Keeps agent conversations lean by moving durable state out of the transcript. Engram-backed recall, retain, and handoff via context-efficiency-mcp plus four adapter usage skills.",
+  "version": "0.1.0",
+  "author": {
+    "name": "gman-robotics"
+  },
+  "homepage": "https://github.com/gman-robotics/context-efficiency",
+  "repository": "https://github.com/gman-robotics/context-efficiency",
+  "license": "MIT",
+  "category": "productivity",
+  "keywords": [
+    "memory",
+    "context",
+    "token",
+    "handoff",
+    "efficiency",
+    "engram",
+    "mcp"
+  ],
+  "skills": "./plugin/skills/",
+  "mcpServers": "./mcp.json"
+}

@@ -20,10 +20,10 @@ Whenever you choose or omit `scope` on a domain memory tool, or when debugging �
 | --- | --- |
 | **`bot`** | Default when the argument is omitted or blank. Bot-wide durable facts. |
 | **`shared`** | Shared across bots/users in the same Engram project (still filtered by token). |
-| **`routine:<name>`** | `<name>` must match **`^[a-z0-9]{1,40}$`** (lowercase alphanumeric). |
-| **`task:<id>`** | `<id>` must match **`^[a-z0-9]{1,40}$`**. |
+| **`routine:<name>`** | `<name>` must match **`^[a-z0-9]{1,40}$`**, and the adapter must fit kind + `cesroutine` + name in **40 bytes** → **max 29** characters for `<name>`. |
+| **`task:<id>`** | `<id>` must match **`^[a-z0-9]{1,40}$`**, and kind + `cestask` + id must fit in **40 bytes** → **max 32** characters for `<id>`. |
 
-Any other string → tool error (`unsupported scope` or invalid routine/task segment).
+Any other string → tool error (`unsupported scope` or invalid routine/task segment). Names or ids longer than the byte limits above fail with **`scope token payload too long`** even when the regex matches.
 
 ## Scope token (40 characters)
 
@@ -61,7 +61,7 @@ Misunderstanding this layer causes “I used scope bot but searched the wrong pr
 
 Before any retain or handoff write, the adapter applies Engram-aligned rules:
 
-1. **`<private>...</private>`** in any stored string → **reject** (no silent redaction).
+1. **`<private>...</private>`** on a **single line** (case-insensitive) → **reject** (no silent redaction). The adapter pattern does **not** match tags that span newlines.
 2. **50 000-byte** stored-content limit → **reject** if Engram would truncate or redact.
 3. Retain additionally rejects oversized **`text`** or JSON as documented in `engram-save-topic-key`.
 
