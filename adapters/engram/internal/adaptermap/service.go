@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/child"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/content"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/engram"
@@ -15,7 +14,7 @@ import (
 
 // Service maps domain tools to engram child calls.
 type Service struct {
-	Client child.ToolCaller
+	Client EngramCaller
 }
 
 func (s *Service) Retain(ctx context.Context, text string, tags []string, importance int, scopeStr string) (string, error) {
@@ -61,10 +60,14 @@ func (s *Service) Recall(ctx context.Context, query string, scopeStr string, lim
 	if limit > 20 {
 		limit = 20
 	}
+	searchLimit := limit
+	if searchLimit < 20 {
+		searchLimit = 20
+	}
 	q := token + " " + strings.TrimSpace(query)
 	resText, isErr, err := s.Client.CallTool(ctx, "mem_search", map[string]interface{}{
 		"query": q,
-		"limit": limit,
+		"limit": searchLimit,
 	})
 	if err != nil {
 		return nil, err

@@ -8,6 +8,9 @@ import (
 
 const tokenLen = 40
 
+// padChar must not appear in scope name/id segments (see namePart).
+const padChar = "-"
+
 var namePart = regexp.MustCompile(`^[a-z0-9]{1,40}$`)
 
 // DefaultScope when callers omit scope.
@@ -27,7 +30,7 @@ func Token(scope string) (string, error) {
 	if len(body) > tokenLen {
 		return "", fmt.Errorf("scope token payload too long")
 	}
-	return body + strings.Repeat("0", tokenLen-len(body)), nil
+	return body + strings.Repeat(padChar, tokenLen-len(body)), nil
 }
 
 func parseScope(scope string) (kind byte, payload string, err error) {

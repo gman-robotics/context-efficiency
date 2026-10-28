@@ -10,7 +10,7 @@ Skills call a **stable domain surface** (`docs/plan.md`). Each backend exposes d
 
 ## Engram v3.6.0 + Go adapter (default)
 
-Source: [Gentleman-Programming/engram v3.6.0](https://github.com/Gentleman-Programming/engram/tree/v3.6.0). Domain scope omitted on tools defaults to **`bot`**. Scope maps to a fixed 40-character token (kind + payload, zero-padded); Engram `scope` on writes/searches is always `project`.
+Source: [Gentleman-Programming/engram v3.6.0](https://github.com/Gentleman-Programming/engram/tree/v3.6.0). Domain scope omitted on tools defaults to **`bot`**. Scope maps to a fixed 40-character token (kind + payload, padded with `-`, which is not a legal scope name character); Engram `scope` on writes/searches is always `project`.
 
 | Domain | Child tool | Mapping |
 | --- | --- | --- |

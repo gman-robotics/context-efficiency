@@ -112,17 +112,16 @@ func TestBotRecallAfterManyRoutineRows(t *testing.T) {
 	defer client.Close()
 	svc := &adaptermap.Service{Client: client}
 
-	const routineRows = 21
-	for i := 0; i < routineRows; i++ {
-		scopeStr := fmt.Sprintf("routine:row%d", i)
-		text := fmt.Sprintf("routine filler %d noise", i)
-		if _, err := svc.Retain(ctx, text, nil, 1, scopeStr); err != nil {
-			t.Fatalf("routine retain %d: %v", i, err)
-		}
-	}
 	const botMarker = "botwindowunique"
 	if _, err := svc.Retain(ctx, botMarker+" fact", nil, 2, "bot"); err != nil {
 		t.Fatal(err)
+	}
+	const routineRows = 21
+	for i := 0; i < routineRows; i++ {
+		text := fmt.Sprintf("%s routine cesbot noise %d", botMarker, i)
+		if _, err := svc.Retain(ctx, text, nil, 1, "routine:cesbot"); err != nil {
+			t.Fatalf("routine retain %d: %v", i, err)
+		}
 	}
 	items, err := svc.Recall(ctx, botMarker, "bot", 5)
 	if err != nil {
