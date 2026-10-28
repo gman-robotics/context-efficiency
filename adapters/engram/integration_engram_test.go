@@ -11,6 +11,7 @@ import (
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/child"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/scope"
 )
 
 func TestRealEngramV360(t *testing.T) {
@@ -57,9 +58,14 @@ func TestRealEngramV360(t *testing.T) {
 	if err != nil || id == "" {
 		t.Fatalf("retain %v id %s", err, id)
 	}
+	tok, _ := scope.Token("bot")
+	rawSearch, searchErr, isSearchErr := client.CallTool(ctx, "mem_search", map[string]interface{}{
+		"query": tok + " alpha",
+		"limit": 5,
+	})
 	items, err = svc.Recall(ctx, "alpha", "bot", 5)
 	if err != nil || len(items) != 1 || items[0].Text != "round-trip alpha" {
-		t.Fatalf("recall %+v err %v", items, err)
+		t.Fatalf("recall %+v err %v search=%q searchErr=%v isSearchErr=%v", items, err, rawSearch, searchErr, isSearchErr)
 	}
 	if items[0].CreatedAt == "" {
 		t.Fatal("createdAt empty")

@@ -75,22 +75,15 @@ func (s *Service) Recall(ctx context.Context, query string, scopeStr string, lim
 		}
 		return nil, fmt.Errorf("mem_search: %s", resText)
 	}
-	var search struct {
-		Results []struct {
-			ID       json.Number `json:"id"`
-			TopicKey string      `json:"topic_key"`
-			Title    string      `json:"title"`
-		} `json:"results"`
-	}
-	if err := json.Unmarshal([]byte(resText), &search); err != nil {
-		// No results array => empty
+	results, err := engram.ParseSearchResults(resText)
+	if err != nil {
 		return []domain.MemoryItem{}, nil
 	}
-	if search.Results == nil {
+	if results == nil {
 		return []domain.MemoryItem{}, nil
 	}
 	var out []domain.MemoryItem
-	for _, r := range search.Results {
+	for _, r := range results {
 		if scope.TitleFirstField(r.Title) != token {
 			continue
 		}
@@ -98,11 +91,11 @@ func (s *Service) Recall(ctx context.Context, query string, scopeStr string, lim
 			continue
 		}
 		id := r.ID.String()
-		obs, isErr, err := s.Client.CallTool(ctx, "mem_get_observation", map[string]interface{}{"id": id})
+		obs, isErr, err := s.Client.CallTool(ctx, "mem_get_observation", map[string]interface{}{"id": observationIDArg(id)})
 		if err != nil || isErr {
 			continue
 		}
-		body, createdAt, err := engram.ParseObservationBody(obs)
+		body, createdAt, err := engram.ParseObservationBody(engram.UnwrapGetObservationText(obs))
 		if err != nil {
 			continue
 		}
@@ -174,17 +167,12 @@ func (s *Service) HandoffRead(ctx context.Context, scopeStr string) (*domain.Han
 		}
 		return nil, fmt.Errorf("mem_search: %s", resText)
 	}
-	var search struct {
-		Results []struct {
-			ID       json.Number `json:"id"`
-			TopicKey string      `json:"topic_key"`
-		} `json:"results"`
-	}
-	if err := json.Unmarshal([]byte(resText), &search); err != nil || search.Results == nil {
+	results, err := engram.ParseSearchResults(resText)
+	if err != nil || results == nil {
 		return nil, nil
 	}
 	var id string
-	for _, r := range search.Results {
+	for _, r := range results {
 		if r.TopicKey == topic {
 			id = r.ID.String()
 			break
@@ -193,11 +181,11 @@ func (s *Service) HandoffRead(ctx context.Context, scopeStr string) (*domain.Han
 	if id == "" {
 		return nil, nil
 	}
-	obs, isErr, err := s.Client.CallTool(ctx, "mem_get_observation", map[string]interface{}{"id": id})
+	obs, isErr, err := s.Client.CallTool(ctx, "mem_get_observation", map[string]interface{}{"id": observationIDArg(id)})
 	if err != nil || isErr {
 		return nil, fmt.Errorf("mem_get_observation failed")
 	}
-	body, _, err := engram.ParseObservationBody(obs)
+	body, _, err := engram.ParseObservationBody(engram.UnwrapGetObservationText(obs))
 	if err != nil {
 		return nil, err
 	}
@@ -237,18 +225,38 @@ func (s *Service) save(ctx context.Context, title, contentBody, topicKey string)
 }
 
 func (s *Service) verifyStoredBody(ctx context.Context, id, want string) error {
-	obs, isErr, err := s.Client.CallTool(ctx, "mem_get_observation", map[string]interface{}{"id": id})
+	obs, isErr, err := s.Client.CallTool(ctx, "mem_get_observation", map[string]interface{}{"id": observationIDArg(id)})
 	if err != nil || isErr {
-		return fmt.Errorf("stored body verification failed")
+		return fmt.Errorf("stored body verification failed: %v isErr=%v", err, isErr)
 	}
-	got, _, err := engram.ParseObservationBody(obs)
+	got, _, err := engram.ParseObservationBody(engram.UnwrapGetObservationText(obs))
 	if err != nil {
 		return err
 	}
-	if got != want {
+	if !jsonEqual(got, want) {
 		return fmt.Errorf("stored body differs from sent body")
 	}
 	return nil
+}
+
+func observationIDArg(id string) interface{} {
+	if n, err := json.Number(id).Int64(); err == nil {
+		return n
+	}
+	return id
+}
+
+func jsonEqual(a, b string) bool {
+	var va, vb interface{}
+	if err := json.Unmarshal([]byte(a), &va); err != nil {
+		return strings.TrimSpace(a) == strings.TrimSpace(b)
+	}
+	if err := json.Unmarshal([]byte(b), &vb); err != nil {
+		return false
+	}
+	ba, _ := json.Marshal(va)
+	bb, _ := json.Marshal(vb)
+	return string(ba) == string(bb)
 }
 
 func defaultScope(s string) string {

@@ -70,6 +70,10 @@ func StartClient(ctx context.Context, engramBin string, project string, env []st
 		_ = cmd.Process.Kill()
 		return nil, err
 	}
+	if err := c.notifyInitialized(); err != nil {
+		_ = cmd.Process.Kill()
+		return nil, err
+	}
 	return c, nil
 }
 
@@ -90,11 +94,17 @@ func (c *Client) initialize(ctx context.Context) error {
 			"version": "0.1.0",
 		},
 	})
-	if err != nil {
-		return err
-	}
-	_, err = c.call(ctx, "notifications/initialized", nil)
 	return err
+}
+
+func (c *Client) notifyInitialized() error {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	msg := map[string]interface{}{
+		"jsonrpc": "2.0",
+		"method":  "notifications/initialized",
+	}
+	return json.NewEncoder(c.stdin).Encode(msg)
 }
 
 func (c *Client) CallTool(ctx context.Context, name string, args map[string]interface{}) (string, bool, error) {

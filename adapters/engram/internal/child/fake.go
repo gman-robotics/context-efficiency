@@ -58,7 +58,7 @@ func (f *FakeEngram) CallTool(ctx context.Context, name string, args map[string]
 		b, _ := json.Marshal(map[string]interface{}{"results": results})
 		return string(b), false, nil
 	case "mem_get_observation":
-		id, _ := args["id"].(string)
+		id := fmt.Sprint(args["id"])
 		for _, s := range f.saves {
 			if s.ID == id {
 				text := fmt.Sprintf("#%s [manual] %s\n%s\n\nSession: test\nCreated: 2026-01-01T00:00:00Z\n", s.ID, s.Title, s.Content)
