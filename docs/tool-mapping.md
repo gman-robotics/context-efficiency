@@ -2,9 +2,24 @@
 
 Skills call a **stable domain surface** (`docs/plan.md`). Each backend exposes different MCP tool names. Adapters (this doc + user `mcp.json`, or a thin Rust/Go/Bun wrapper later) translate between them.
 
-**Default backend:** **Pending** — [GMA-425](https://linear.app/gman-personal-projects/issue/GMA-425). Do not pin a package in `mcp.json` until that issue closes.
+**Default backend:** **Engram v3.6.0** via Go adapter `context-efficiency-mcp` ([engram](https://github.com/Gentleman-Programming/engram) tag `v3.6.0`, MCP tools in `internal/mcp/mcp.go`). Child: `mem_save`, `mem_search`, `mem_get_observation` only.
 
-**Server policy (this repo):** Custom or default MCP servers must be **Rust**, **Go**, or **Bun TypeScript** — **never Node.js**. Several well-known SQLite MCPs on npm are **Node**; they are documented below for comparison only and are **out of policy** for this project.
+**Server policy:** Rust, Go, or Bun TypeScript — **never Node.js**. Node SQLite MCPs below are comparison-only / **out of policy**.
+
+---
+
+## Engram v3.6.0 + Go adapter (default)
+
+Source: [Gentleman-Programming/engram v3.6.0](https://github.com/Gentleman-Programming/engram/tree/v3.6.0). Domain scope omitted on tools defaults to **`bot`**. Scope maps to a fixed 40-character token (kind + payload, padded with `-`, which is not a legal scope name character); Engram `scope` on writes/searches is always `project`.
+
+| Domain | Child tool | Mapping |
+| --- | --- | --- |
+| `recall` | `mem_search` | Query `<token> <user query>`, `match_mode` default `all`, `limit` 1–20; filter rows where title’s first field **equals** `<token>`; skip `handoff` titles; `mem_get_observation` per id; `unknown_project` → `[]` |
+| `retain` | `mem_save` | Title `<token> <clip>`; body JSON `RetainBody`; `capture_prompt: false`; no `topic_key`; pre-check private tags and 50k truncation |
+| `handoff_write` | `mem_save` | Title literal `handoff`; `topic_key` `handoff/<token>`; body JSON `Handoff` only; same pre-checks + post `mem_get_observation` compare |
+| `handoff_read` | `mem_search` + `mem_get_observation` | Query exactly `handoff/<token>`; keep row where `topic_key` equals query; `unknown_project` → null |
+
+`mem_session_summary`: **none** (unused). Tool-level `project`: **none** (unset; `--project` CLI only).
 
 ## Domain tools (what skills expect)
 

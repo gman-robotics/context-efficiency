@@ -13,5 +13,8 @@ skills/verify-context-efficiency/bin/verify-context-efficiency-doctor \
   2>&1 | tee "${ARTIFACTS}/doctor.transcript"
 
 ./scripts/check.sh 2>&1 | tee "${ARTIFACTS}/check.transcript"
+if [[ -f adapters/engram/go.mod ]]; then
+  ./scripts/check-go.sh 2>&1 | tee "${ARTIFACTS}/check-go.transcript"
+fi
 
 echo "verify-context-efficiency-ci: OK (artifacts=${ARTIFACTS})"

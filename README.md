@@ -24,6 +24,7 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 - [ ] Skill SKILL.md files written
 - [ ] plugin.json + mcp.json scaffolding
 - [x] Tool mapping docs for backends (`docs/tool-mapping.md`, `docs/backends.md`)
+- [x] Engram v3.6.0 Go adapter (`adapters/engram/`, GMA-429)
 - [ ] Marketplace submission notes
 
 ## Tech Recommendations

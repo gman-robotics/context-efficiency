@@ -47,7 +47,7 @@ python3 /path/to/agent-bootstrap/scripts/hub_pull_request_template.py check --fi
 
 ## Planning
 
-Read `docs/plan.md` fully before implementing plugin features. Do not ship a custom memory server unless the domain interface cannot map to existing OSS MCPs. Sequence work in verifiable units (docs → skills → manifest → backends).
+Read `docs/plan.md` fully before implementing plugin features. Do not ship a custom memory server unless the domain interface cannot map to existing OSS MCPs. Sequence work in verifiable units (docs → adapter → skills → manifest).
 
 ## Implementation
 
@@ -67,7 +67,7 @@ set -euo pipefail
 
 **Verify skill:** `skills/verify-context-efficiency/SKILL.md` — doctor + drive via `skills/verify-context-efficiency/bin/verify-context-efficiency-ci`.
 
-**CI pass bar:** workflow `.github/workflows/check.yml`, job `markdown-and-links`, step `Run repo check` — `./scripts/check.sh` must exit `0`.
+**CI pass bar:** workflow `.github/workflows/check.yml` — job `markdown-and-links` (`./scripts/check.sh` plus negative scripts) and job `go-adapter` (`./scripts/check-go.sh` with engram v3.6.0 linux_amd64 prepared by `scripts/ci-prepare-engram.sh`) must exit `0`.
 
 **Gates:** ub-mode crapper/dryer/mutator are not required for this Markdown-first repo; record `N/A` or CI check results on the PR `Gates:` line.
 

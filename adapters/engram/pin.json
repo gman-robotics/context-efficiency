@@ -1,0 +1,30 @@
+{
+  "version": "3.6.0",
+  "upstream": "https://github.com/Gentleman-Programming/engram",
+  "archives": {
+    "linux_amd64": {
+      "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_linux_amd64.tar.gz",
+      "sha256": "945fb471188826c251160947f8dda9fe148ba0dd095fa3453174fe7ab5c6479e"
+    },
+    "linux_arm64": {
+      "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_linux_arm64.tar.gz",
+      "sha256": "00a2d7645aa428e56c32c18b8de8bfa90d4c6e0f68c4d47bc82e3d6e3e77879d"
+    },
+    "darwin_amd64": {
+      "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_darwin_amd64.tar.gz",
+      "sha256": "41d74d7d61bd8a8929da85a3ed75dbcb16c18f30efff4675ad2f832c8f89898e"
+    },
+    "darwin_arm64": {
+      "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_darwin_arm64.tar.gz",
+      "sha256": "b1e565ad2a2f01beca936030d65ab79075808ecc81e1e16447040e32fa2c0753"
+    },
+    "windows_amd64": {
+      "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_windows_amd64.zip",
+      "sha256": "22650375af19d1e46ffe1f376314c12c20370dfd19045fbc649a95991706a102"
+    },
+    "windows_arm64": {
+      "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_windows_arm64.zip",
+      "sha256": "5a990f889bb1fb1b72bf1127216cc9f2f0bba7faa37c030a36329f8e8a51586d"
+    }
+  }
+}
