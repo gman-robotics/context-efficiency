@@ -21,6 +21,10 @@ required=(
   .github/workflows/check.yml
   skills/standards-context-efficiency/SKILL.md
   skills/verify-context-efficiency/SKILL.md
+  plugin/skills/engram-recall/SKILL.md
+  plugin/skills/engram-save-topic-key/SKILL.md
+  plugin/skills/engram-handoff/SKILL.md
+  plugin/skills/engram-scope/SKILL.md
 )
 
 for path in "${required[@]}"; do
