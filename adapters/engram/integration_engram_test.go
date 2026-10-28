@@ -86,7 +86,7 @@ func TestRealEngramV360(t *testing.T) {
 	}
 }
 
-// Tom required fix #3: many routine-scope rows must not crowd bot-scope recall out of FTS window.
+// Many routine-scope rows must not crowd bot-scope recall out of the FTS search window.
 func TestBotRecallAfterManyRoutineRows(t *testing.T) {
 	bin := os.Getenv("ENGRAM_BIN")
 	if bin == "" {
