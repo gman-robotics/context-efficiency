@@ -21,8 +21,8 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 
 - [x] Repository created
 - [x] High-level plan documented
-- [ ] Skill SKILL.md files written
-- [ ] plugin.json + mcp.json scaffolding
+- [x] Engram usage skills (`plugin/skills/`, GMA-426)
+- [x] plugin.json + mcp.json scaffolding (GMA-428)
 - [x] Tool mapping docs for backends (`docs/tool-mapping.md`, `docs/backends.md`)
 - [x] Engram v3.6.0 Go adapter (`adapters/engram/`, GMA-429)
 - [ ] Marketplace submission notes
@@ -39,8 +39,8 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 
 1. Read `AGENTS.md` for verify commands and PR header order.
 2. Read `docs/plan.md` fully.
-3. Implement the four skills under `skills/` following the sketches.
-4. Create `.cursor-plugin/plugin.json` (or `.grok-plugin/plugin.json`) and `mcp.json` (after GMA-425 picks default MCP).
+3. Load the four **usage** skills under `plugin/skills/` when calling memory tools; process skills from `docs/plan.md` are not shipped yet.
+4. Build the adapter and configure `mcp.json` env (see `docs/backends.md`).
 5. Run `./scripts/check.sh` (see `skills/verify-context-efficiency/`).
 6. Update this README status when done.
 

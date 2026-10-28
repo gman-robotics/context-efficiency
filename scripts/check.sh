@@ -25,11 +25,27 @@ required=(
   plugin/skills/engram-save-topic-key/SKILL.md
   plugin/skills/engram-handoff/SKILL.md
   plugin/skills/engram-scope/SKILL.md
+  .grok-plugin/plugin.json
+  .cursor-plugin/plugin.json
+  mcp.json
+  plugin/bin/run-context-efficiency-mcp.sh
 )
 
 for path in "${required[@]}"; do
   if [[ ! -f "${path}" ]]; then
     echo "check: FAIL missing required file: ${path}"
+    exit 1
+  fi
+done
+
+json_required=(
+  .grok-plugin/plugin.json
+  .cursor-plugin/plugin.json
+  mcp.json
+)
+for path in "${json_required[@]}"; do
+  if ! python3 -c "import json, pathlib; json.load(pathlib.Path('${path}').open(encoding='utf-8'))"; then
+    echo "check: FAIL invalid JSON: ${path}"
     exit 1
   fi
 done

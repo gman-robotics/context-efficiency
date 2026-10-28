@@ -28,7 +28,7 @@ When persisting or resuming a structured session handoff (goal, open items, deci
 | Rule | Detail |
 | --- | --- |
 | **`mem_save` `title`** | Literal **`handoff`** (lowercase). Not the scope token, not a free-form title. |
-| **Scope in title** | Scope is **not** encoded in the title; it is encoded in **`topic_key`** and in JSON only indirectly via scope token. |
+| **Scope in title** | Scope is **not** in the title. **`Handoff` JSON has no scope field** — scope is only on the tool argument and in **`topic_key`** (`handoff/<40-char token>`). |
 | **`recall` visibility** | Rows whose title starts with **`handoff`** are **excluded** from `recall` results. Load handoffs only with **`handoff_read`**. |
 
 The adapter tests enforce the literal title; agents must not invent alternate titles for handoffs.
@@ -56,7 +56,7 @@ Use the **same `scope` argument** as `handoff_write` when reading back.
 
 ## Pre-checks (same family as `retain`)
 
-- No `<private>...</private>` in any handoff string field before write.
+- No **single-line** `<private>...</private>` in any handoff string field (pattern does not cross newlines).
 - No content that would be truncated at **50 000** bytes or redacted by storage rules.
 - Marshaled handoff JSON over **40000** bytes → error.
 
