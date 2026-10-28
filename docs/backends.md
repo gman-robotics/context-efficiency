@@ -1,91 +1,69 @@
 # Memory backends (setup overview)
 
-Pluggable memory MCP for context-efficiency skills. This doc does **not** ship `mcp.json` or pick a default package.
+Pluggable memory MCP for context-efficiency skills.
 
-> **Default backend: pending ([GMA-425](https://linear.app/gman-personal-projects/issue/GMA-425)).** Until that issue closes, no recommended pin — especially not Node-based servers (see below).
+## Default backend (decision record)
 
-## Shared requirements
+**Engram v3.6.0** is the default memory backend for this plugin, exposed through the in-repo **Go adapter** (`adapters/engram/`, binary `context-efficiency-mcp`). Upstream: [Gentleman-Programming/engram](https://github.com/Gentleman-Programming/engram) tag `v3.6.0`.
 
-- **Write** short memories (`retain`)
-- **Search** by query (`recall`)
-- Clear **auth** and **data residency**
-- **Server runtime:** Rust, Go, or Bun TypeScript only for servers this project adopts — **never Node.js**
+| Item | Value |
+| --- | --- |
+| Adapter module | `github.com/gman-robotics/context-efficiency/adapters/engram` |
+| Domain MCP tools | `recall`, `retain`, `handoff_write`, `handoff_read` |
+| Child process | `engram mcp --project "<name>" --tools=mem_save,mem_search,mem_get_observation` |
+| Pin | `adapters/engram/pin.json` (archive URLs + sha256; `binary_sha256` on release artifacts) |
+| Manifest / `mcp.json` | GMA-428 (not in GMA-429) |
 
-Handoffs may be file-first; see `docs/tool-mapping.md`.
-
----
-
-## Local open-source (SQLite / FTS)
-
-**Role:** Local data, no hosted API key. Preferred **class** after GMA-425, subject to runtime policy.
-
-### Named packages (verified; not ranked)
-
-| Package | Upstream | Runtime | Policy |
-| --- | --- | --- | --- |
-| `simple-memory-mcp` (npm) | [chrisribe/simple-memory-mcp](https://github.com/chrisribe/simple-memory-mcp) | **Node** (`npx -y simple-memory-mcp`) | **Out of policy** |
-| `simple-memory-mcp` (Bun fork) | [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) | **Bun** (`bunx --bun github:mrorigo/simple-memory-mcp#main`) | **In-policy candidate** |
-| `mini-memory-mcp` | [utk09-ncl/mini-memory-mcp](https://github.com/utk09-ncl/mini-memory-mcp) | **Node** (≥ 20; `npm run start:mcp`) | **Out of policy** |
-
-Do not treat npm `simple-memory-mcp` and [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) as the same server — different runtimes, different tools ([tool-mapping.md](./tool-mapping.md)).
-
-**After GMA-425 selects a backend:**
-
-1. Install per upstream README (Bun/Rust/Go only for in-policy choices).
-2. Add MCP entry in plugin `mcp.json` or Bot settings.
-3. Confirm tools in the Bot UI match `docs/tool-mapping.md`.
-4. Smoke-test one retain-equivalent write and one recall-equivalent search.
+**Runtime policy:** Rust, Go, or Bun TypeScript servers only — **never Node.js**. Legacy Node SQLite MCPs remain documented as out of policy in `docs/tool-mapping.md`.
 
 ---
 
-## Mem0 (hosted MCP)
+## Engram adapter (local default)
+
+**Operator env (required at runtime):**
+
+| Variable | Rule |
+| --- | --- |
+| `ENGRAM_DATA_DIR` | Absolute path to SQLite data directory |
+| `ENGRAM_PROJECT` | Project name (not a path; no `/` or `\`) |
+| `ENGRAM_BIN` | Optional override; otherwise sibling `engram` next to `context-efficiency-mcp` |
+
+The adapter spawns the child with an **explicit** environment: `ENGRAM_DATA_DIR`, sentinel `HOME` / `USERPROFILE` (not the operator home), and **no** `ENGRAM_PROJECT` / `ENGRAM_CLOUD_AUTOSYNC` / `ENGRAM_DATABASE_URL` in the child. Project name is only `--project` on the CLI.
+
+**Auth:** Local SQLite — no API key.
+
+**Mapping:** `docs/tool-mapping.md` (domain ↔ `mem_save` / `mem_search` / `mem_get_observation`).
+
+**Verify:** `./scripts/check-go.sh` (unit tests always; integration when `ENGRAM_BIN` points at pinned v3.6.0).
+
+---
+
+## Mem0 (hosted alternate)
 
 **URL:** `https://mcp.mem0.ai/mcp` ([Mem0 MCP](https://docs.mem0.ai/platform/mem0-mcp))
 
-**Auth (either):**
+**Auth:** Browser **OAuth** through the client, or **API key** bearer token for headless clients.
 
-- **OAuth** — client opens browser sign-in on first tool use ([Signing in](https://docs.mem0.ai/platform/mem0-mcp#signing-in))
-- **API key** — bearer token for headless clients (`Authorization: Token …` per Mem0 dashboard)
-
-**Tools:** `add_memory`, `search_memories`, plus list/get/update/delete helpers ([tool table](https://docs.mem0.ai/platform/mem0-mcp#available-tools)).
-
-**Scope:** Map domain scope to Mem0 `user_id` / `agent_id` / `app_id` / `run_id` — not a single `scope` enum.
-
-**Data:** Hosted in Mem0 account.
+**Data:** Hosted in Mem0 account. See `docs/tool-mapping.md` for tool names.
 
 ---
 
-## Honcho
+## Honcho (hosted alternate)
 
-**URL:** `https://mcp.honcho.dev` ([MCP integration](https://honcho.dev/docs/v3/guides/integrations/mcp), [Grok Bot](https://honcho.dev/docs/v3/guides/integrations/grok-bot))
+**URL:** `https://mcp.honcho.dev` ([MCP guide](https://honcho.dev/docs/v3/guides/integrations/mcp))
 
-**Auth:** OAuth through the Grok plugin connect flow, or API key on a custom MCP connector.
+**Auth:** OAuth connect flow or API key on custom connector.
 
-**Tools:** Workspace/session/peer tools such as `search`, `add_messages_to_session`, `chat` ([MCP tree](https://github.com/plastic-labs/honcho/tree/main/mcp)). Map domain operations per `docs/tool-mapping.md`; no dedicated handoff tools.
-
-**Data:** Honcho cloud (or self-hosted if you operate Honcho yourself).
-
----
-
-## Decision record
-
-| Decision | Status |
-| --- | --- |
-| Default local MCP package | **Pending** — GMA-425 |
-| Node-based `simple-memory-mcp` / `mini-memory-mcp` as project default | **Rejected** by runtime policy |
-| Mem0 / Honcho as documented alternates | Documented |
-
-Do not merge a pinned default `mcp.json` until GMA-425 resolves.
+**Data:** Honcho cloud (or self-hosted). See `docs/tool-mapping.md`.
 
 ---
 
 ## Security
 
-- No API keys in git; use Bot secrets / env.
-- Least-privilege Mem0/Honcho keys.
-- Local SQLite: scope tags if multiple Bots share a DB file.
+- No API keys in git for hosted backends.
+- Local engram: protect `ENGRAM_DATA_DIR` on shared machines.
 
 ## Related docs
 
-- `docs/tool-mapping.md` — per-tool mapping with sources
-- `docs/plan.md` — architecture
+- `docs/tool-mapping.md` — per-backend tool tables
+- `docs/plan.md` — domain model
