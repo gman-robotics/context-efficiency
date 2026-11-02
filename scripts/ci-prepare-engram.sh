@@ -3,10 +3,17 @@
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PIN="${REPO_ROOT}/adapters/engram/pin.json"
 CI_DIR="${REPO_ROOT}/adapters/engram/.ci"
 ARCHIVE="${CI_DIR}/engram_3.6.0_linux_amd64.tar.gz"
-URL="https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_linux_amd64.tar.gz"
-SHA="945fb471188826c251160947f8dda9fe148ba0dd095fa3453174fe7ab5c6479e"
+
+read -r URL SHA <<<"$(python3 - "${PIN}" <<'PY'
+import json, sys
+pin = json.load(open(sys.argv[1], encoding="utf-8"))
+arch = pin["archives"]["linux_amd64"]
+print(arch["url"], arch["sha256"])
+PY
+)"
 
 mkdir -p "${CI_DIR}"
 if [[ ! -f "${ARCHIVE}" ]]; then

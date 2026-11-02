@@ -1,6 +1,6 @@
 # context-efficiency verification map
 
-User-facing “features” for this repo are **documentation and agent workflows** until the Grok plugin ships. Read the index, then drive the matching feature file.
+User-facing features for this repo include **plugin manifests**, the **Go Engram MCP adapter**, **usage skills**, and **docs/agent workflows**. Read the index, then drive the matching feature file.
 
 ## Baseline preconditions
 
@@ -18,3 +18,5 @@ User-facing “features” for this repo are **documentation and agent workflows
 
 - [Repository docs](./repo-docs.md) — README and plan are present and linked.
 - [Repo check script](./repo-check-script.md) — `scripts/check.sh` passes (CI parity).
+- [Go engram adapter](./go-engram-adapter.md) — unit tests and optional v3.6.0 integration via `check-go.sh`.
+- [Plugin manifest and MCP config](./plugin-manifest-mcp.md) — plugin.json manifests, `mcp.json`, and MCP launcher script.

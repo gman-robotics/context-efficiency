@@ -1,6 +1,7 @@
 {
   "version": "3.6.0",
   "upstream": "https://github.com/Gentleman-Programming/engram",
+  "binary_sha256": "08e0e6102452b9532bbfebfd82660cd8bf60913e4ba0b3abc372a1a152e25caf",
   "archives": {
     "linux_amd64": {
       "url": "https://github.com/Gentleman-Programming/engram/releases/download/v3.6.0/engram_3.6.0_linux_amd64.tar.gz",

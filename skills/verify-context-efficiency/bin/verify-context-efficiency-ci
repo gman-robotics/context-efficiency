@@ -1,13 +1,36 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Re-exec under a dedicated session so EXIT can signal the whole process group
+# (integration tests may leave engram children running).
+if [[ "${VERIFY_CE_CI_REEXEC:-}" != 1 ]]; then
+  export VERIFY_CE_CI_REEXEC=1
+  exec setsid "$0" "$@"
+fi
+
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "${REPO_ROOT}"
 
 ARTIFACTS="${VERIFY_CE_ARTIFACTS_DIR:-/tmp/verify-context-efficiency/ci-$$}"
 mkdir -p "${ARTIFACTS}"
+
+_ce_verify_cleanup() {
+  local ec=$?
+  trap - EXIT INT TERM
+  trap '' TERM
+  kill -TERM -- -$$ 2>/dev/null || true
+  wait 2>/dev/null || true
+  exit "${ec}"
+}
+trap _ce_verify_cleanup EXIT INT TERM
+
+# Used by scripts/test-verify-ci-cleanup-exit-code.sh (CI negative test for trap exit codes).
+if [[ "${VERIFY_CE_TEST_FORCE_FAIL:-}" == 1 ]]; then
+  exit 7
+fi
+
 mkdir -p .metrics 2>/dev/null || true
-echo "N/A (no ub-mode gates; Markdown repo)" > .metrics/verify-ub-outcome.txt
+echo "N/A (no ub-mode gates)" > .metrics/verify-ub-outcome.txt
 
 skills/verify-context-efficiency/bin/verify-context-efficiency-doctor \
   2>&1 | tee "${ARTIFACTS}/doctor.transcript"
@@ -16,5 +39,7 @@ skills/verify-context-efficiency/bin/verify-context-efficiency-doctor \
 if [[ -f adapters/engram/go.mod ]]; then
   ./scripts/check-go.sh 2>&1 | tee "${ARTIFACTS}/check-go.transcript"
 fi
+
+trap - EXIT INT TERM
 
 echo "verify-context-efficiency-ci: OK (artifacts=${ARTIFACTS})"

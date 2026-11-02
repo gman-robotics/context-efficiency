@@ -1,14 +1,14 @@
 ---
 name: verify-context-efficiency
 description: >-
-  Verify context-efficiency repo docs, skills layout, and scripts/check.sh the way
-  an agent does before a PR. Use for bootstrap CI parity and T0/T1 doc changes.
+  Verify context-efficiency plugin layout, Go Engram adapter, docs, and scripts/check.sh
+  the way an agent does before a PR. Use for CI parity (check.sh, check-go, verify bundle).
 version: 1.0.0
 ---
 
 # verify-context-efficiency
 
-Verification skill for **gman-robotics/context-efficiency**. There is no long-lived app server: the surface is **Markdown skills**, **docs**, and **`scripts/check.sh`**.
+Verification skill for **gman-robotics/context-efficiency**. There is no long-lived app server: the surface is **plugin manifests**, the **Go MCP adapter**, **Markdown skills**, **docs**, and **`scripts/check.sh`** / **`scripts/check-go.sh`**.
 
 ## Launch
 
@@ -41,6 +41,8 @@ Requires exit code `0` and a line `verify-context-efficiency doctor: OK`.
 | Goal | Command |
 | --- | --- |
 | Repo check (CI parity) | `./scripts/check.sh` |
+| Go adapter (when `adapters/engram/go.mod` exists) | `./scripts/check-go.sh` with `ENGRAM_BIN` for integration |
+| Plugin manifest / MCP layout | Covered by `./scripts/check.sh` required paths (see feature map) |
 | Full bundle | `skills/verify-context-efficiency/bin/verify-context-efficiency-ci` |
 
 Read `features/README.md` before driving; cover the mapped entry points relevant to your change.
@@ -72,11 +74,11 @@ Remove only scratch dirs you created under `/tmp/verify-context-efficiency/` for
 skills/verify-context-efficiency/bin/verify-context-efficiency-ci
 ```
 
-Runs doctor + `./scripts/check.sh`. Writes `N/A (no ub-mode gates; Markdown repo)` to `.metrics/verify-ub-outcome.txt` when `.metrics/` exists. Always exits `0` when checks pass.
+Runs doctor + `./scripts/check.sh` + `./scripts/check-go.sh` when the Go adapter is present. Re-execs under `setsid` and tears down its process group on exit. Writes `N/A (no ub-mode gates)` to `.metrics/verify-ub-outcome.txt` when `.metrics/` exists. Always exits `0` when checks pass.
 
 ## Helpers
 
 | Script | Role |
 | --- | --- |
 | `bin/verify-context-efficiency-doctor` | Read-only preflight |
-| `bin/verify-context-efficiency-ci` | Doctor + check.sh for PR/CI |
+| `bin/verify-context-efficiency-ci` | Doctor + check.sh (+ check-go when adapter present) for PR/CI |
