@@ -24,6 +24,7 @@ jobs:
           ./scripts/test-check-negative-pr-headers-fence.sh
           ./scripts/test-check-negative-pr-headers-tilde-fence.sh
           ./scripts/test-check-negative-shortcut-ref-in-fence.sh
+          ./scripts/test-verify-ci-cleanup-exit-code.sh
 
   go-adapter:
     runs-on: ubuntu-latest

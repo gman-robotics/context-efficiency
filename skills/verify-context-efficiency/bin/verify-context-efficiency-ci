@@ -15,10 +15,19 @@ ARTIFACTS="${VERIFY_CE_ARTIFACTS_DIR:-/tmp/verify-context-efficiency/ci-$$}"
 mkdir -p "${ARTIFACTS}"
 
 _ce_verify_cleanup() {
+  local ec=$?
+  trap - EXIT INT TERM
+  trap '' TERM
   kill -TERM -- -$$ 2>/dev/null || true
   wait 2>/dev/null || true
+  exit "${ec}"
 }
 trap _ce_verify_cleanup EXIT INT TERM
+
+# Used by scripts/test-verify-ci-cleanup-exit-code.sh (CI negative test for trap exit codes).
+if [[ "${VERIFY_CE_TEST_FORCE_FAIL:-}" == 1 ]]; then
+  exit 7
+fi
 
 mkdir -p .metrics 2>/dev/null || true
 echo "N/A (no ub-mode gates)" > .metrics/verify-ub-outcome.txt
