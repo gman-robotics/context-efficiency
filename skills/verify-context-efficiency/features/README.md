@@ -1,6 +1,6 @@
 # context-efficiency verification map
 
-User-facing “features” for this repo are **documentation and agent workflows** until the Grok plugin ships. Read the index, then drive the matching feature file.
+User-facing features for this repo include **plugin manifests**, the **Go Engram MCP adapter**, **usage skills**, and **docs/agent workflows**. Read the index, then drive the matching feature file.
 
 ## Baseline preconditions
 

@@ -30,6 +30,6 @@ Observable result: `check: all gates passed` and CI job `markdown-and-links` pas
 
 ## Gotchas
 
-- Placeholder absolute paths in `mcp.json` (`/absolute/path/to/engram`) are intentional samples; hosts must replace them — the repo check validates JSON shape, not host-specific paths.
+- Placeholder absolute paths in `mcp.json` (`/absolute/path/to/engram`) are intentional samples; hosts must replace them — `./scripts/check.sh` only checks that manifest files exist and parse as JSON (via `json.load`); it does not assert `skills` / `mcpServers` values or launcher mode.
 - Both Grok and Cursor manifests should stay in sync when adding skills or changing MCP wiring.
 - Changing `mcp.json` without updating `docs/tool-mapping.md` may confuse agents; keep docs aligned in product PRs (this feature only proves on-disk layout).
