@@ -67,7 +67,7 @@ set -euo pipefail
 
 **Verify skill:** `skills/verify-context-efficiency/SKILL.md` — doctor + drive via `skills/verify-context-efficiency/bin/verify-context-efficiency-ci`.
 
-**CI pass bar:** workflow `.github/workflows/check.yml` — job `markdown-and-links` (`./scripts/check.sh` plus negative scripts), job `go-adapter` (`./scripts/check-go.sh` with engram v3.6.0 linux_amd64 prepared by `scripts/ci-prepare-engram.sh`), and job `verify-context-efficiency` (`skills/verify-context-efficiency/bin/verify-context-efficiency-ci`) must exit `0`.
+**CI pass bar:** workflow `.github/workflows/check.yml` — job `markdown-and-links` (`./scripts/check.sh` plus negative scripts), job `go-adapter` (`./scripts/check-go.sh` with engram v3.6.0 linux_amd64 prepared by `scripts/ci-prepare-engram.sh`, then `adapters/engram/.ci/engram` compared to `pin.json` `binary_sha256`), and job `verify-context-efficiency` (`skills/verify-context-efficiency/bin/verify-context-efficiency-ci`) must exit `0`. `workflow_dispatch` workflow `.github/workflows/engram-pin-check.yml` repeats that digest check and does not publish; it is not a pull-request gate.
 
 **Gates:** ub-mode crapper/dryer/mutator are not required for this Markdown-first repo; record `N/A` or CI check results on the PR `Gates:` line.
 

@@ -18,7 +18,7 @@ Before calling `recall` to pull durable facts into working context. Pair with `e
 
 | Tool | Required args | Optional args | Returns |
 | --- | --- | --- | --- |
-| `recall` | `query` (string) | `scope`, `limit` (number) | JSON array of `MemoryItem` |
+| `recall` | `query` (string) | `scope`, `limit` (number) | JSON array of `MemoryItem` hits. `[]` for `unknown_project`, unparseable `mem_search` text, and nil `results` (empty success, not an MCP error). `null` only when every row is filtered out. |
 
 `MemoryItem` fields: `id`, `text`, `tags`, `importance`, `scope`, `createdAt` (see `docs/plan.md`).
 
@@ -39,8 +39,8 @@ Use a small `limit` (3–5) in chat to keep context lean. Use a higher limit (up
 - Keeps rows whose **title’s first whitespace-separated field equals the scope token**.
 - **Skips** rows whose title starts with **`handoff`** (handoffs are loaded via `handoff_read`, not `recall`).
 - Fetches each kept id with `mem_get_observation` and unmarshals the stored `RetainBody` JSON into `MemoryItem`.
-- **`unknown_project`** from the child → JSON array **`[]`**, not an error.
-- **No in-scope hits** after filtering → JSON **`null`** (not `[]`). **`unknown_project`** and **`null`** are both “nothing to inject”; only `unknown_project` is guaranteed to be `[]`.
+- **`unknown_project`**, unparseable `mem_search` text, or nil `results` → JSON array **`[]`**, not an MCP error.
+- **Every row filtered out** → JSON **`null`** (not `[]`).
 
 ## Agent rules
 

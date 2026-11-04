@@ -2,7 +2,7 @@
 
 The **context-efficiency-mcp** Go adapter in `adapters/engram/` wraps Engram v3.6.0. Domain MCP tools are **`recall`**, **`retain`**, **`handoff_write`**, and **`handoff_read`** (see `adapters/engram/internal/front/server.go` and `docs/backends.md`). **`scope`** is a tool argument, not a separate MCP tool.
 
-CI downloads the pinned linux_amd64 Engram release in **`scripts/ci-prepare-engram.sh`**, reading archive URL and tarball SHA256 from **`adapters/engram/pin.json`** (`archives.linux_amd64`). The adapter binary verifies the child Engram executable against **`pin.json` → `binary_sha256`** at startup (linux v3.6.0 hash in-tree).
+CI downloads the pinned linux_amd64 Engram release in **`scripts/ci-prepare-engram.sh`**, reading archive URL and tarball SHA256 from **`adapters/engram/pin.json`** (`archives.linux_amd64`). The adapter binary verifies the child Engram executable against **`pin.json` → `binary_sha256`** at startup (linux v3.6.0 hash in-tree). The PR `go-adapter` job compares the extracted linux binary `adapters/engram/.ci/engram` to `binary_sha256`. Dispatch workflow `.github/workflows/engram-pin-check.yml` repeats that check and does not publish.
 
 ## Sub-features
 
@@ -14,7 +14,7 @@ CI downloads the pinned linux_amd64 Engram release in **`scripts/ci-prepare-engr
 
 - Install or extract Engram v3.6.0 (see `docs/backends.md` and `adapters/engram/pin.json`).
 - Build the adapter: `(cd adapters/engram && go build -o context-efficiency-mcp ./cmd/context-efficiency-mcp/)`.
-- Set **`ENGRAM_DATA_DIR`** (absolute) and **`ENGRAM_PROJECT`**, point **`ENGRAM_BIN`** at an Engram binary matching `pin.json` `binary_sha256` (or place `engram` beside the adapter with the same hash).
+- Set **`ENGRAM_DATA_DIR`** (absolute) and **`ENGRAM_PROJECT`**, and point **`ENGRAM_BIN`** at an Engram binary whose SHA256 equals `pin.json` `binary_sha256` (one linux_amd64 digest; other OS builds fail startup with `binary sha256 mismatch`). Root `mcp.json` sets `ENGRAM_BIN`, so while that key is set the launcher fallback does not run. An unset key makes `plugin/bin/run-context-efficiency-mcp.sh` use `adapters/engram/engram`. The Go process looks in the directory of the running binary, which differs when `CONTEXT_EFFICIENCY_MCP_BIN` points elsewhere.
 - Launch via `plugin/bin/run-context-efficiency-mcp.sh` once the adapter build exists.
 
 ## Driving it with verify-context-efficiency

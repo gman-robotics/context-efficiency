@@ -19,6 +19,7 @@ required=(
   "${PR_TEMPLATE}"
   scripts/fixtures/hub-pr-template-tier-body.md
   .github/workflows/check.yml
+  .github/workflows/engram-pin-check.yml
   skills/standards-context-efficiency/SKILL.md
   skills/verify-context-efficiency/SKILL.md
   plugin/skills/engram-recall/SKILL.md

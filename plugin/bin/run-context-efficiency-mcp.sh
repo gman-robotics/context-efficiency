@@ -10,7 +10,6 @@ MCP_BIN="${CONTEXT_EFFICIENCY_MCP_BIN:-${ADAPTER_DIR}/context-efficiency-mcp}"
 if [[ ! -x "${MCP_BIN}" ]]; then
   echo "context-efficiency-mcp: missing executable at ${MCP_BIN}" >&2
   echo "Build: (cd adapters/engram && go build -o context-efficiency-mcp ./cmd/context-efficiency-mcp/)" >&2
-  echo "Install engram v3.6.0 beside the adapter or set ENGRAM_BIN (see docs/backends.md)." >&2
   exit 1
 fi
 

@@ -130,7 +130,7 @@ func TestHandoffBodyMutationError(t *testing.T) {
 	}
 }
 
-// expose saveRec for tests in same package - fake uses unexported type; use LastSaveTitle only
+// saveRec stays unexported. Tests use LastSaveTitle, LastTopicKey, and GetCount.
 
 func TestRecallTrimsToCallerLimit(t *testing.T) {
 	fake := &child.FakeEngram{}
@@ -171,16 +171,70 @@ func TestRecallDefaultLimit(t *testing.T) {
 	}
 }
 
-func TestSearchNoResultsArray(t *testing.T) {
-	fake := &child.FakeEngram{}
+func TestRecallUnparseableSearchEmptySlice(t *testing.T) {
+	fake := &child.FakeEngram{SearchText: "not-json"}
 	svc := &Service{Client: fake}
-	// After first retain, empty JSON search still ok
-	_, _ = svc.Retain(context.Background(), "seed", nil, 1, "bot")
-	items, err := svc.Recall(context.Background(), "seed", "bot", 5)
+	items, err := svc.Recall(context.Background(), "q", "bot", 5)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(items) < 1 {
-		t.Fatal("expected seed")
+	if items == nil || len(items) != 0 {
+		t.Fatalf("want non-nil empty slice, got %#v", items)
+	}
+}
+
+func TestRecallNullResultsEmptySlice(t *testing.T) {
+	fake := &child.FakeEngram{SearchText: `{"results":null}`}
+	svc := &Service{Client: fake}
+	items, err := svc.Recall(context.Background(), "q", "bot", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if items == nil || len(items) != 0 {
+		t.Fatalf("want non-nil empty slice, got %#v", items)
+	}
+}
+
+func TestRecallFilterMissNilItems(t *testing.T) {
+	fake := &child.FakeEngram{}
+	svc := &Service{Client: fake}
+	if _, err := svc.Retain(context.Background(), "in-scope fact", nil, 1, "bot"); err != nil {
+		t.Fatal(err)
+	}
+	fake.SearchText = `{"results":[{"id":1,"title":"not-the-scope-token","topic_key":""}]}`
+	items, err := svc.Recall(context.Background(), "nomatch", "bot", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if items != nil {
+		t.Fatalf("filter miss want nil items, got %#v", items)
+	}
+}
+
+func TestHandoffWriteObservesOnce(t *testing.T) {
+	fake := &child.FakeEngram{}
+	svc := &Service{Client: fake}
+	id, err := svc.HandoffWrite(context.Background(), domain.Handoff{Goal: "g"}, "bot")
+	if err != nil || id == "" {
+		t.Fatalf("handoff %v id %q", err, id)
+	}
+	if fake.GetCount() != 1 {
+		t.Fatalf("mem_get_observation count %d want 1", fake.GetCount())
+	}
+}
+
+func TestHandoffWriteBlankScopeTopicKey(t *testing.T) {
+	fake := &child.FakeEngram{}
+	svc := &Service{Client: fake}
+	if _, err := svc.HandoffWrite(context.Background(), domain.Handoff{Goal: "g"}, ""); err != nil {
+		t.Fatal(err)
+	}
+	token, err := scope.Token(scope.DefaultScope)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := scope.HandoffTopicKey(token)
+	if fake.LastTopicKey() != want {
+		t.Fatalf("topic_key %q want %q", fake.LastTopicKey(), want)
 	}
 }

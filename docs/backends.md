@@ -11,7 +11,7 @@ Pluggable memory MCP for context-efficiency skills.
 | Adapter module | `github.com/gman-robotics/context-efficiency/adapters/engram` |
 | Domain MCP tools | `recall`, `retain`, `handoff_write`, `handoff_read` |
 | Child process | `engram mcp --project "<name>" --tools=mem_save,mem_search,mem_get_observation` |
-| Pin | `adapters/engram/pin.json` (archive URLs + sha256; `binary_sha256` on release artifacts) |
+| Pin | `adapters/engram/pin.json` (`binary_sha256` is one linux_amd64 digest in that file; other OS archives do not match it, and those binaries fail startup with `binary sha256 mismatch`) |
 | Manifest / `mcp.json` | `.grok-plugin/plugin.json`, `.cursor-plugin/plugin.json`, root `mcp.json` (GMA-428) |
 
 **Runtime policy:** Rust, Go, or Bun TypeScript servers only — **never Node.js**. Legacy Node SQLite MCPs remain documented as out of policy in `docs/tool-mapping.md`.
@@ -36,7 +36,7 @@ The adapter spawns the child with an **explicit** environment: `ENGRAM_DATA_DIR`
 
 **Verify:** `./scripts/check-go.sh` (unit tests always; integration when `ENGRAM_BIN` points at pinned v3.6.0).
 
-**Plugin MCP start:** Root `mcp.json` runs `plugin/bin/run-context-efficiency-mcp.sh`, which **exec**s a pre-built `adapters/engram/context-efficiency-mcp` (no engram download at process start). Set absolute `ENGRAM_DATA_DIR`, `ENGRAM_PROJECT`, and `ENGRAM_BIN` in `mcp.json` (or install `engram` beside the adapter). Build the adapter with `(cd adapters/engram && go build -o context-efficiency-mcp ./cmd/context-efficiency-mcp/)`.
+**Plugin MCP start:** Root `mcp.json` runs `plugin/bin/run-context-efficiency-mcp.sh`, which **exec**s a pre-built `adapters/engram/context-efficiency-mcp` (no engram download at process start). Replace `mcp.json` `ENGRAM_BIN` with a binary of the `pin.json` `binary_sha256` digest. While that key is set, the launcher fallback does not run. When `ENGRAM_BIN` is unset, the launcher uses `adapters/engram/engram`. The Go adapter resolves `engram` from the directory of the running binary, which differs when `CONTEXT_EFFICIENCY_MCP_BIN` points elsewhere. Build the adapter with `(cd adapters/engram && go build -o context-efficiency-mcp ./cmd/context-efficiency-mcp/)`.
 
 ---
 

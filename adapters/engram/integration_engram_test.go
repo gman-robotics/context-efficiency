@@ -66,8 +66,8 @@ func TestRealEngramV360(t *testing.T) {
 		t.Fatal("createdAt empty")
 	}
 
-	id2, err := svc.Retain(ctx, "second body differs", []string{"t"}, 1, "bot")
-	id3, err2 := svc.Retain(ctx, "second body differs again", []string{"t"}, 1, "bot")
+	id2, err := svc.Retain(ctx, "identical-forty-byte-title-clip-12345678-alpha", []string{"t"}, 1, "bot")
+	id3, err2 := svc.Retain(ctx, "identical-forty-byte-title-clip-12345678-beta", []string{"t"}, 1, "bot")
 	if err != nil || err2 != nil || id2 == "" || id3 == "" || id2 == id3 {
 		t.Fatalf("two retains same title clip should differ ids %s %s", id2, id3)
 	}

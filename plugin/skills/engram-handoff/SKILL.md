@@ -56,9 +56,11 @@ Use the **same `scope` argument** as `handoff_write` when reading back.
 
 ## Pre-checks (same family as `retain`)
 
-- No **single-line** `<private>...</private>` in any handoff string field (pattern does not cross newlines).
-- No content that would be truncated at **50 000** bytes or redacted by storage rules.
-- Marshaled handoff JSON over **40000** bytes → error.
+Content checks run in this order. A body that fails the 40 000-byte guard never reaches truncation.
+
+1. **Private blocks:** Any **single-line** `<private>...</private>` (case-insensitive; pattern `(?i)<private>.*?</private>` with no `(?s)`, so `.` does not cross newlines) in any handoff string field → error (`content would be redacted by storage rules`).
+2. **Marshaled JSON over 40 000 bytes** → error (`handoff body too large`).
+3. **`PrepareForStore` at 50 000 bytes:** content that would be redacted or truncated → error (`content would be redacted or truncated by storage rules`).
 
 ## Agent rules
 
