@@ -311,6 +311,10 @@ done
 grep -F 'laya_live' skills/standards-context-efficiency/SKILL.md >/dev/null
 grep -F 'The Six Components' docs/plan.md >/dev/null
 grep -F 'six components' README.md >/dev/null
+if grep -E 'LAYA_API_KEY|find-generic-password|security |gman-laya-api-key' plugin/bin/run-context-efficiency-mcp.sh >/dev/null; then
+  echo "check: FAIL plugin launcher reads a Laya key or the keychain (GMA-551)"
+  exit 1
+fi
 if grep -F 'LAYA_API_KEY' mcp.json >/dev/null; then
   echo "check: FAIL mcp.json contains LAYA_API_KEY"
   exit 1

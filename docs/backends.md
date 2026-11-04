@@ -42,7 +42,7 @@ The adapter spawns the child with an **explicit** environment: `ENGRAM_DATA_DIR`
 
 ## Laya shadow (decision layer)
 
-Laya 0.4.22 runs as a separate local process. The adapter asks it for a shadow label and still follows the caller-supplied `actual`. The contract, install, and agreement report are in `docs/laya-shadow.md`. `LAYA_API_KEY` is not stored in `mcp.json`. The launcher may read keychain service `gman-laya-api-key` for about 2 seconds and still starts when that read fails.
+Laya 0.4.22 runs as a separate local process. The adapter asks it for a shadow label and still follows the caller-supplied `actual`. The contract, install, and agreement report are in `docs/laya-shadow.md`. Laya is not in the plugin (GMA-551). `LAYA_API_KEY` is not stored in `mcp.json`, and the plugin launcher reads no key and no keychain.
 
 ## Mem0 (hosted alternate)
 
