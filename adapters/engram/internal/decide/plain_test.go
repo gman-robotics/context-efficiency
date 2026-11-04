@@ -1,6 +1,8 @@
 package decide
 
 import (
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -103,5 +105,44 @@ func TestScoreCountsMiss(t *testing.T) {
 	}
 	if rep.OverallPass || rep.Paths[0].Misses[0] != "x" || *rep.Paths[0].Pass {
 		t.Fatalf("report %+v", rep)
+	}
+}
+
+func TestGateBoundary(t *testing.T) {
+	cases := []struct {
+		agree, total int
+		want         bool
+	}{{18, 20, true}, {17, 20, false}, {0, 0, false}}
+	for _, c := range cases {
+		got := gate(PathScore{Path: shadow.PathGo, Agree: c.agree, Total: c.total})
+		if got.Pass == nil || *got.Pass != c.want || *got.ThresholdPct != 90 {
+			t.Fatalf("%+v: got %+v", c, got)
+		}
+	}
+	if got := gate(PathScore{Path: shadow.PathStop, Agree: 1, Total: 1}); got.Pass != nil || got.DisplayPct != 100 {
+		t.Fatalf("stop gated: %+v", got)
+	}
+}
+
+func TestWriteFiles(t *testing.T) {
+	dir := t.TempDir()
+	rep := Report{Note: Circularity, Paths: []PathScore{gate(PathScore{Path: shadow.PathPR, Agree: 19, Total: 20})}}
+	if err := Write(dir, rep); err != nil {
+		t.Fatal(err)
+	}
+	md, err := os.ReadFile(filepath.Join(dir, "plain-decide-agreement.md"))
+	if err != nil || !strings.Contains(string(md), "| pr_class | 19 | 20 | 95.0% | >= 95% | true |") {
+		t.Fatalf("md %q err %v", md, err)
+	}
+	raw, err := os.ReadFile(filepath.Join(dir, "plain-decide-agreement.json"))
+	if err != nil || !strings.Contains(string(raw), `"threshold_pct": 95`) {
+		t.Fatalf("json %s err %v", raw, err)
+	}
+	blocker := filepath.Join(dir, "file")
+	if err := os.WriteFile(blocker, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := Write(filepath.Join(blocker, "sub"), rep); err == nil {
+		t.Fatal("want error under a file")
 	}
 }

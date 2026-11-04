@@ -18,3 +18,13 @@ func TestRunWritesReport(t *testing.T) {
 		}
 	}
 }
+
+func TestRunWriteError(t *testing.T) {
+	f := filepath.Join(t.TempDir(), "file")
+	if err := os.WriteFile(f, nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if code := run(filepath.Join(f, "sub"), io.Discard); code != 1 {
+		t.Fatalf("exit %d", code)
+	}
+}

@@ -42,35 +42,48 @@ func Score(cases []shadow.Case, now time.Time) (Report, error) {
 		by[p] = &PathScore{Path: p, Misses: []string{}}
 	}
 	for _, c := range cases {
-		ps, ok := by[c.Path]
-		if !ok {
-			continue
+		if ps, ok := by[c.Path]; ok {
+			if err := scoreCase(ps, c); err != nil {
+				return Report{}, err
+			}
 		}
-		raw, err := features(c)
-		if err != nil {
-			return Report{}, err
-		}
-		ps.Total++
-		res, err := Decide(c.Path, raw)
-		if err == nil && res.Label == c.Actual {
-			ps.Agree++
-			continue
-		}
-		ps.Misses = append(ps.Misses, c.ID)
 	}
 	rep := Report{GeneratedAt: now.UTC().Format(time.RFC3339), Mode: "plain", Note: Circularity, OverallPass: true}
 	for _, p := range Paths {
-		ps := by[p]
-		ps.DisplayPct = shadow.DisplayPct(ps.Agree, ps.Total)
-		if gate, ok := shadow.GatePct(p); ok {
-			g := gate
-			pass := ps.Total > 0 && ps.Agree*100 >= gate*ps.Total
-			ps.ThresholdPct, ps.Pass = &g, &pass
-			rep.OverallPass = rep.OverallPass && pass
+		ps := gate(*by[p])
+		if ps.Pass != nil && !*ps.Pass {
+			rep.OverallPass = false
 		}
-		rep.Paths = append(rep.Paths, *ps)
+		rep.Paths = append(rep.Paths, ps)
 	}
 	return rep, nil
+}
+
+func scoreCase(ps *PathScore, c shadow.Case) error {
+	raw, err := features(c)
+	if err != nil {
+		return err
+	}
+	ps.Total++
+	res, err := Decide(c.Path, raw)
+	if err == nil && res.Label == c.Actual {
+		ps.Agree++
+		return nil
+	}
+	ps.Misses = append(ps.Misses, c.ID)
+	return nil
+}
+
+// gate fills the display pct and, for gated paths, the threshold and pass bit.
+func gate(ps PathScore) PathScore {
+	ps.DisplayPct = shadow.DisplayPct(ps.Agree, ps.Total)
+	g, ok := shadow.GatePct(ps.Path)
+	if !ok {
+		return ps
+	}
+	pass := ps.Total > 0 && ps.Agree*100 >= g*ps.Total
+	ps.ThresholdPct, ps.Pass = &g, &pass
+	return ps
 }
 
 func features(c shadow.Case) ([]byte, error) {

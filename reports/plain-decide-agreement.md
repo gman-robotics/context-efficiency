@@ -1,6 +1,6 @@
 # Plain decide agreement
 
-Generated 2026-11-04T15:56:18Z. Mode plain.
+Generated 2026-11-04T15:59:48Z. Mode plain.
 
 > Agreement is 100% by construction: the fixtures' actual labels are validated against the same shadow.Rule* functions this layer calls (shadow.RunCases refuses on drift). This is not an independent result; it only shows the plain layer wires those rules correctly.
 
