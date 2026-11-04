@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
 // RunHost serves domain MCP tools on stdio.
-func RunHost(ctx context.Context, svc *adaptermap.Service) error {
+func RunHost(ctx context.Context, svc *adaptermap.Service, dec *shadow.Decider) error {
 	s := server.NewMCPServer("context-efficiency-mcp", "0.1.0")
 
 	s.AddTool(mcp.NewTool("recall",
@@ -40,7 +41,55 @@ func RunHost(ctx context.Context, svc *adaptermap.Service) error {
 		mcp.WithString("scope"),
 	), handoffReadHandler(svc))
 
+	s.AddTool(mcp.NewTool("decide_shadow",
+		mcp.WithDescription("Record a shadow label beside the caller-supplied actual. Follow actual. Effect is none. A missing key, transport error, non-2xx, or truncated window is not a no_go."),
+		mcp.WithString("path", mcp.Required()),
+		mcp.WithString("state_body", mcp.Required()),
+		mcp.WithString("actual", mcp.Required()),
+		mcp.WithString("action"),
+		mcp.WithArray("labels", mcp.WithStringItems()),
+		mcp.WithString("request_id"),
+	), decideShadowHandler(dec))
+
 	return server.ServeStdio(s)
+}
+
+func decideShadowHandler(dec *shadow.Decider) func(context.Context, mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	return func(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+		if dec == nil {
+			return mcp.NewToolResultError("laya decider not set"), nil
+		}
+		args := req.GetArguments()
+		path, _ := args["path"].(string)
+		body, _ := args["state_body"].(string)
+		actual, _ := args["actual"].(string)
+		action, _ := args["action"].(string)
+		requestID, _ := args["request_id"].(string)
+		var labels []string
+		if raw, ok := args["labels"].([]interface{}); ok {
+			for _, item := range raw {
+				if s, ok := item.(string); ok {
+					labels = append(labels, s)
+				}
+			}
+		}
+		out, err := dec.Decide(ctx, shadow.Input{
+			Path:      path,
+			StateBody: body,
+			Actual:    actual,
+			Action:    action,
+			Labels:    labels,
+			RequestID: requestID,
+		})
+		if err != nil {
+			return mcp.NewToolResultError(err.Error()), nil
+		}
+		b, err := json.Marshal(out)
+		if err != nil {
+			return mcp.NewToolResultError("laya response unreadable"), nil
+		}
+		return mcp.NewToolResultText(string(b)), nil
+	}
 }
 
 func recallHandler(svc *adaptermap.Service) func(context.Context, mcp.CallToolRequest) (*mcp.CallToolResult, error) {

@@ -42,6 +42,7 @@ Requires exit code `0` and a line `verify-context-efficiency doctor: OK`.
 | --- | --- |
 | Repo check (CI parity) | `./scripts/check.sh` |
 | Go adapter (when `adapters/engram/go.mod` exists) | `./scripts/check-go.sh` with `ENGRAM_BIN` for integration |
+| Laya shadow units | Covered by `go test ./...` inside `./scripts/check-go.sh`. No live tag |
 | Plugin manifest / MCP layout | Covered by `./scripts/check.sh` required paths (see feature map) |
 | Full bundle | `skills/verify-context-efficiency/bin/verify-context-efficiency-ci` |
 

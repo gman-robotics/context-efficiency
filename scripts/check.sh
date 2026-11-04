@@ -26,6 +26,11 @@ required=(
   plugin/skills/engram-save-topic-key/SKILL.md
   plugin/skills/engram-handoff/SKILL.md
   plugin/skills/engram-scope/SKILL.md
+  plugin/skills/routine-hygiene/SKILL.md
+  adapters/laya/laya-requirements.lock
+  adapters/laya/run-laya-serve.sh
+  docs/laya-shadow.md
+  skills/verify-context-efficiency/features/laya-shadow-unit.md
   .grok-plugin/plugin.json
   .cursor-plugin/plugin.json
   mcp.json
@@ -224,7 +229,7 @@ if not md_files:
 
 for md in md_files:
     rel = md.relative_to(repo)
-    if any(part in {".git"} for part in rel.parts):
+    if any(part in {".git", ".laya-ref"} for part in rel.parts):
         continue
     text = md.read_text(encoding="utf-8")
     if not text.strip():
@@ -253,5 +258,60 @@ if errors:
 
 print(f"check: OK ({len(md_files)} markdown files)")
 PY
+
+python3 - <<'PY'
+from pathlib import Path
+import sys
+
+lock = Path("adapters/laya/laya-requirements.lock")
+lines = lock.read_text(encoding="utf-8").splitlines()
+if len(lines) != 44:
+    print(f"check: FAIL lock lines {len(lines)}")
+    sys.exit(1)
+pin = "laya==0.4.22 --hash=sha256:7e8cad8ca4cb76588ef608e70ad6753bae612885e015aeeeae7b43268ec5fd5a"
+if pin not in lines:
+    print("check: FAIL lock missing laya pin")
+    sys.exit(1)
+for prefix in ("fastapi==", "uvicorn==", "python-multipart=="):
+    if not any(line.startswith(prefix) for line in lines):
+        print(f"check: FAIL lock missing {prefix}")
+        sys.exit(1)
+if "LAYA_API_KEY" in "\n".join(lines):
+    print("check: FAIL lock contains LAYA_API_KEY")
+    sys.exit(1)
+PY
+
+script="adapters/laya/run-laya-serve.sh"
+grep -F '{"model.safetensors":"891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c"}' "${script}" >/dev/null
+grep -F 'LAYA_HOST=127.0.0.1' "${script}" >/dev/null
+grep -F 'HF_HUB_OFFLINE=1' "${script}" >/dev/null
+if grep -F 'pip install' "${script}" >/dev/null; then
+  echo "check: FAIL run script contains pip install"
+  exit 1
+fi
+
+doc="docs/laya-shadow.md"
+for needle in "0.4.22" "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c" "routine:layashadow" "decide_shadow" "Python 3.10" "LAYA_VENV"; do
+  if ! grep -F "${needle}" "${doc}" >/dev/null; then
+    echo "check: FAIL doc missing ${needle}"
+    exit 1
+  fi
+done
+
+skill="plugin/skills/routine-hygiene/SKILL.md"
+for needle in "decide_shadow" "routine:layashadow" "refused:"; do
+  if ! grep -F "${needle}" "${skill}" >/dev/null; then
+    echo "check: FAIL skill missing ${needle}"
+    exit 1
+  fi
+done
+
+grep -F 'laya_live' skills/standards-context-efficiency/SKILL.md >/dev/null
+grep -F 'The Six Components' docs/plan.md >/dev/null
+grep -F 'six components' README.md >/dev/null
+if grep -F 'LAYA_API_KEY' mcp.json >/dev/null; then
+  echo "check: FAIL mcp.json contains LAYA_API_KEY"
+  exit 1
+fi
 
 echo "check: all gates passed"

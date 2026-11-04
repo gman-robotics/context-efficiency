@@ -1,6 +1,6 @@
 # Go engram adapter (v3.6.0)
 
-The **context-efficiency-mcp** Go adapter in `adapters/engram/` wraps Engram v3.6.0. Domain MCP tools are **`recall`**, **`retain`**, **`handoff_write`**, and **`handoff_read`** (see `adapters/engram/internal/front/server.go` and `docs/backends.md`). **`scope`** is a tool argument, not a separate MCP tool.
+The **context-efficiency-mcp** Go adapter in `adapters/engram/` wraps Engram v3.6.0. Domain MCP tools are **`recall`**, **`retain`**, **`handoff_write`**, **`handoff_read`**, and **`decide_shadow`** (see `adapters/engram/internal/front/server.go` and `docs/backends.md`). **`scope`** is a tool argument, not a separate MCP tool. Shadow unit tests are part of `go test ./...`. There is no `laya_live` tag.
 
 CI downloads the pinned linux_amd64 Engram release in **`scripts/ci-prepare-engram.sh`**, reading archive URL and tarball SHA256 from **`adapters/engram/pin.json`** (`archives.linux_amd64`). The adapter binary verifies the child Engram executable against **`pin.json` → `binary_sha256`** at startup (linux v3.6.0 hash in-tree). The PR `go-adapter` job compares the extracted linux binary `adapters/engram/.ci/engram` to `binary_sha256`. Dispatch workflow `.github/workflows/engram-pin-check.yml` repeats that check and does not publish.
 
@@ -39,3 +39,4 @@ Observable result: CI jobs `go-adapter` and `verify-context-efficiency` (and the
 - Startup fatals with `pin missing binary_sha256` when that field is absent, or `binary sha256 mismatch` when `ENGRAM_BIN` / sibling `engram` does not match the pin.
 - `run-context-efficiency-mcp.sh` fails fast if the MCP binary was not built — build before expecting stdio MCP startup.
 - Engram version must match `pin.json` (`3.6.0`); newer upstream releases require a deliberate pin bump (archives, `binary_sha256`, and integration re-run).
+- Shadow units run under `go test ./...`. There is no live tag, and `cmd/laya-shadow-report` is not a PR gate.

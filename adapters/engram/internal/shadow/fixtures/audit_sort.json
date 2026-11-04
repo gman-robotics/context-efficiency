@@ -1,0 +1,18 @@
+[
+  {"id": "audit-security-01", "actual": "blocker", "audit": {"kind": "security"}},
+  {"id": "audit-security-02", "actual": "blocker", "audit": {"kind": "security"}},
+  {"id": "audit-security-03", "actual": "blocker", "audit": {"kind": "security"}},
+  {"id": "audit-data-loss-01", "actual": "blocker", "audit": {"kind": "data_loss"}},
+  {"id": "audit-data-loss-02", "actual": "blocker", "audit": {"kind": "data_loss"}},
+  {"id": "audit-data-loss-03", "actual": "blocker", "audit": {"kind": "data_loss"}},
+  {"id": "audit-test-failure-01", "actual": "blocker", "audit": {"kind": "test_failure"}},
+  {"id": "audit-test-failure-02", "actual": "blocker", "audit": {"kind": "test_failure"}},
+  {"id": "audit-behavior-bug-01", "actual": "should_fix", "audit": {"kind": "behavior_bug"}},
+  {"id": "audit-behavior-bug-02", "actual": "should_fix", "audit": {"kind": "behavior_bug"}},
+  {"id": "audit-behavior-bug-03", "actual": "should_fix", "audit": {"kind": "behavior_bug"}},
+  {"id": "audit-naming-01", "actual": "nit", "audit": {"kind": "naming"}},
+  {"id": "audit-naming-02", "actual": "nit", "audit": {"kind": "naming"}},
+  {"id": "audit-naming-03", "actual": "nit", "audit": {"kind": "naming"}},
+  {"id": "audit-typo-01", "actual": "note", "audit": {"kind": "typo_question"}},
+  {"id": "audit-typo-02", "actual": "note", "audit": {"kind": "typo_question"}}
+]

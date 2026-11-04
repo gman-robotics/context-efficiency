@@ -6,10 +6,13 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/child"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/front"
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/laya"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/startup"
 )
 
@@ -57,7 +60,22 @@ func main() {
 	defer client.Close()
 
 	svc := &adaptermap.Service{Client: client}
-	if err := front.RunHost(ctx, svc); err != nil {
+	layaClient, err := openLaya()
+	if err != nil {
 		log.Fatal(err)
 	}
+	dec := shadow.NewDecider(layaClient, svc)
+	if err := front.RunHost(ctx, svc, dec); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// openLaya fails closed only when a key is set and the base URL is rejected.
+// An empty key still starts the process. Decide then returns the key error.
+func openLaya() (*laya.Client, error) {
+	key := strings.TrimSpace(os.Getenv("LAYA_API_KEY"))
+	if key == "" {
+		return laya.NewClient("", "")
+	}
+	return laya.NewClient(os.Getenv("LAYA_BASE_URL"), key)
 }

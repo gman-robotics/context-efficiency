@@ -5,7 +5,7 @@ The project explains its purpose in `README.md` and the architected plan in `doc
 ## Sub-features
 
 - `readme-present` — README describes goals and points at `docs/plan.md`.
-- `plan-present` — plan documents domain model and five components.
+- `plan-present` — plan documents domain model and six components.
 
 ## How to get to it (user POV)
 

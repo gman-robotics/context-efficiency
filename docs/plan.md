@@ -54,7 +54,7 @@ context-efficiency/
 │   ├── context-hygiene/SKILL.md
 │   ├── pre-task-recall/SKILL.md
 │   ├── handoff-advisor/SKILL.md
-│   └── routine-hygiene/SKILL.md
+│   └── routine-hygiene/SKILL.md    # shipped at plugin/skills/routine-hygiene/SKILL.md
 ├── docs/
 │   ├── backends.md                 # local / Mem0 / Honcho setup
 │   └── tool-mapping.md
@@ -76,7 +76,7 @@ context-efficiency/
 }
 ```
 
-## The Five Components
+## The Six Components
 
 ### 1. MCP Memory Server (pluggable backbone)
 
@@ -92,6 +92,7 @@ Optional backends (documented, not shipped):
 - `retain(text: string, tags: string[], importance: number, scope: Scope) → id`
 - `handoff_write(handoff: Handoff, scope: Scope) → pathOrId`
 - `handoff_read(scope: Scope) → Handoff | null`
+- `decide_shadow(path, state_body, actual, action?, labels?, request_id?) → record; effect none. Follow actual.`
 
 **Tech note**: Prefer Rust or Go for any custom thin wrapper (single static binary, runs natively on Bot computer). Prefer composing existing OSS first. If implementing a custom MCP server in TypeScript, prefer **Bun** over Node.js (faster startup, single-binary option via `bun build --compile`, better native performance).
 
@@ -120,12 +121,17 @@ Used at task end, end of day, or when context feels heavy:
 3. Call `retain` for the key decisions.
 4. Recommend: “Duplicate me (or start a new single-Bot group chat) and have the copy read the handoff.”
 
-### 5. Routine Hygiene Skill (`skills/routine-hygiene/SKILL.md`)
+### 5. Routine Hygiene Skill (`plugin/skills/routine-hygiene/SKILL.md`)
 
 For any routine the Bot creates or runs:
-- Start: short `recall` for that routine’s scope.
+- Start: call `decide_shadow` for `routine_go_nogo` and follow `actual`. A Laya miss continues from `actual`. Stop when `actual` is `no_go` or the error starts with `refused:`.
+- Short `recall` for that routine's scope.
 - End: `retain` outcome + write results to a file rather than leaving them in the turn.
 - Prefer short routine prompts that point at files/memory.
+
+### 6. Decision layer (shadow)
+
+Laya runs as a separate process. Four paths: routine go or no-go, PR tier, tool retry, and audit bucket. The log stores metadata only, at scope `routine:layashadow`. A refusal stops before HTTP and before save. The agreement report is `cmd/laya-shadow-report`. Follow `actual`. A Laya miss continues the routine. Contract: `docs/laya-shadow.md`.
 
 ## Backend Support
 
@@ -136,7 +142,7 @@ For any routine the Bot creates or runs:
 
 ## Implementation Order (for continuing agents)
 
-1. Write the four SKILL.md files from the sketches above (keep them short and principle-aligned).
+1. Write the four adapter usage SKILL.md files. The routine-hygiene process skill is shipped at `plugin/skills/routine-hygiene/SKILL.md`. The other three process skills stay sketches.
 2. Add `docs/tool-mapping.md` and `docs/backends.md`.
 3. Create the plugin manifest and default `mcp.json`.
 4. Add a verification checklist (does a Bot follow the hygiene rules? does recall inject only short items?).

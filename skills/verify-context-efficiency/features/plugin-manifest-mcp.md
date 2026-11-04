@@ -11,8 +11,8 @@ Cursor and Grok install this repo as a plugin: manifests under `.cursor-plugin/`
 ## How to get to it (user POV)
 
 - Open the repo as a Cursor or Grok plugin (manifest paths above).
-- Agents load the four Engram usage skills from `plugin/skills/`.
-- MCP clients read `mcp.json` and spawn `plugin/bin/run-context-efficiency-mcp.sh` with `ENGRAM_BIN` / data-dir env vars configured for the host.
+- Agents load the four Engram usage skills from `plugin/skills/`, plus the `routine-hygiene` process skill.
+- MCP clients read `mcp.json` and spawn `plugin/bin/run-context-efficiency-mcp.sh` with `ENGRAM_BIN` / data-dir env vars configured for the host. `mcp.json` has no `LAYA_API_KEY`. The launcher may read the keychain for about 2 seconds and still starts when that read fails.
 
 ## Driving it with verify-context-efficiency
 

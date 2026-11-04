@@ -13,7 +13,7 @@ The full conversation transcript is re-sent on every turn. This project moves du
 
 ## Design Summary
 
-See `docs/plan.md` for the full architected plan (domain model, five components, plugin structure, backend recommendations).
+See `docs/plan.md` for the full architected plan (domain model, six components, plugin structure, backend recommendations).
 
 Core idea: skills speak a small domain (recall / retain / handoff). Backends are adapters. The default is a local SQLite MCP so no API key is required.
 
@@ -25,6 +25,7 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 - [x] plugin.json + mcp.json scaffolding (GMA-428)
 - [x] Tool mapping docs for backends (`docs/tool-mapping.md`, `docs/backends.md`)
 - [x] Engram v3.6.0 Go adapter (`adapters/engram/`, GMA-429)
+- [x] Laya shadow decision layer (GMA-542): `decide_shadow`, routine-hygiene process skill, report command
 - [ ] Marketplace submission notes
 
 ## Tech Recommendations
@@ -39,7 +40,7 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 
 1. Read `AGENTS.md` for verify commands and PR header order.
 2. Read `docs/plan.md` fully.
-3. Load the four **usage** skills under `plugin/skills/` when calling memory tools; process skills from `docs/plan.md` are not shipped yet.
+3. Load the four adapter usage skills under `plugin/skills/` when calling memory tools. `routine-hygiene` is the shipped process skill. `context-hygiene`, `pre-task-recall`, and `handoff-advisor` remain unshipped.
 4. Build the adapter and configure `mcp.json` env (see `docs/backends.md`).
 5. Run `./scripts/check.sh` (see `skills/verify-context-efficiency/`).
 6. Update this README status when done.

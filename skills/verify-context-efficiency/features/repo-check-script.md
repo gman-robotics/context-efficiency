@@ -29,3 +29,4 @@ Observable result: CI job `markdown-and-links` would pass on the same commit.
 
 - Adding a `SKILL.md` without YAML `name` and `description` fails the check.
 - Broken relative Markdown links fail the check.
+- Required files now include `adapters/laya/laya-requirements.lock`, `adapters/laya/run-laya-serve.sh`, `plugin/skills/routine-hygiene/SKILL.md`, `docs/laya-shadow.md`, and `skills/verify-context-efficiency/features/laya-shadow-unit.md`. The markdown walker skips the untracked Laya reference directory named in `.gitignore`.

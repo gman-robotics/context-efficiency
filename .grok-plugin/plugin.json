@@ -1,7 +1,7 @@
 {
   "name": "context-efficiency",
   "displayName": "Context Efficiency",
-  "description": "Keeps agent conversations lean by moving durable state out of the transcript. Engram-backed recall, retain, and handoff via context-efficiency-mcp plus four adapter usage skills.",
+  "description": "Keeps agent conversations lean by moving durable state out of the transcript. Engram-backed recall, retain, and handoff via context-efficiency-mcp plus four adapter usage skills. Shadow labels sit beside the caller-supplied actual, and routine-hygiene is the process skill.",
   "version": "0.1.0",
   "author": {
     "name": "gman-robotics"

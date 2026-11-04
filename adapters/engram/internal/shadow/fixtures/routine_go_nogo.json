@@ -1,0 +1,22 @@
+[
+  {"id": "gng-go-write-01", "actual": "go", "go": {"name_ok": true, "action": "write_file", "blocked": false}},
+  {"id": "gng-go-write-02", "actual": "go", "go": {"name_ok": true, "action": "write_file", "blocked": false}},
+  {"id": "gng-go-write-03", "actual": "go", "go": {"name_ok": true, "action": "write_file", "blocked": false}},
+  {"id": "gng-go-write-04", "actual": "go", "go": {"name_ok": true, "action": "write_file", "blocked": false}},
+  {"id": "gng-go-retain-01", "actual": "go", "go": {"name_ok": true, "action": "retain_summary", "blocked": false}},
+  {"id": "gng-go-retain-02", "actual": "go", "go": {"name_ok": true, "action": "retain_summary", "blocked": false}},
+  {"id": "gng-go-retain-03", "actual": "go", "go": {"name_ok": true, "action": "retain_summary", "blocked": false}},
+  {"id": "gng-go-retain-04", "actual": "go", "go": {"name_ok": true, "action": "retain_summary", "blocked": false}},
+  {"id": "gng-nogo-name-01", "actual": "no_go", "go": {"name_ok": false, "action": "write_file", "blocked": false}},
+  {"id": "gng-nogo-name-02", "actual": "no_go", "go": {"name_ok": false, "action": "write_file", "blocked": false}},
+  {"id": "gng-nogo-name-03", "actual": "no_go", "go": {"name_ok": false, "action": "write_file", "blocked": false}},
+  {"id": "gng-nogo-name-04", "actual": "no_go", "go": {"name_ok": false, "action": "write_file", "blocked": false}},
+  {"id": "gng-nogo-read-01", "actual": "no_go", "go": {"name_ok": true, "action": "read_only", "blocked": false}},
+  {"id": "gng-nogo-read-02", "actual": "no_go", "go": {"name_ok": true, "action": "read_only", "blocked": false}},
+  {"id": "gng-nogo-read-03", "actual": "no_go", "go": {"name_ok": true, "action": "read_only", "blocked": false}},
+  {"id": "gng-nogo-read-04", "actual": "no_go", "go": {"name_ok": true, "action": "read_only", "blocked": false}},
+  {"id": "gng-nogo-blocked-01", "actual": "no_go", "go": {"name_ok": true, "action": "write_file", "blocked": true}},
+  {"id": "gng-nogo-blocked-02", "actual": "no_go", "go": {"name_ok": true, "action": "write_file", "blocked": true}},
+  {"id": "gng-nogo-blocked-03", "actual": "no_go", "go": {"name_ok": true, "action": "write_file", "blocked": true}},
+  {"id": "gng-nogo-blocked-04", "actual": "no_go", "go": {"name_ok": true, "action": "write_file", "blocked": true}}
+]
