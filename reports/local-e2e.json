@@ -1,0 +1,74 @@
+{
+  "commit": "d2b05f6cf06d64b2b7b6b8b04918f89f5641e39a",
+  "server": "context-efficiency-mcp 0.1.0",
+  "tools": [
+    "decide",
+    "decide_shadow",
+    "handoff_read",
+    "handoff_write",
+    "recall",
+    "retain"
+  ],
+  "results": [
+    {
+      "step": "retain",
+      "pass": true
+    },
+    {
+      "step": "recall",
+      "pass": true
+    },
+    {
+      "step": "handoff_write",
+      "pass": true
+    },
+    {
+      "step": "handoff_read",
+      "pass": true
+    },
+    {
+      "step": "decide routine_go_nogo go",
+      "pass": true
+    },
+    {
+      "step": "decide routine_go_nogo no_go",
+      "pass": true
+    },
+    {
+      "step": "decide pr_class T3",
+      "pass": true
+    },
+    {
+      "step": "decide pr_class T0",
+      "pass": true
+    },
+    {
+      "step": "decide tool_failure_stop stop",
+      "pass": true
+    },
+    {
+      "step": "decide tool_failure_stop continue",
+      "pass": true
+    },
+    {
+      "step": "decide unknown path refused",
+      "pass": true
+    },
+    {
+      "step": "decide send_email refused",
+      "pass": true
+    },
+    {
+      "step": "decide merge refused",
+      "pass": true
+    },
+    {
+      "step": "decide deploy refused",
+      "pass": true
+    },
+    {
+      "step": "decide pay refused",
+      "pass": true
+    }
+  ]
+}
