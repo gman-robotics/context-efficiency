@@ -122,13 +122,7 @@ func validateBaseURL(raw string) error {
 	if err != nil || u.Host == "" || u.User != nil {
 		return errors.New("laya base url rejected")
 	}
-	if u.Scheme != "http" && u.Scheme != "https" {
-		return errors.New("laya base url rejected")
-	}
-	if u.Path != "" && u.Path != "/" {
-		return errors.New("laya base url rejected")
-	}
-	if u.RawQuery != "" || u.Fragment != "" || u.Opaque != "" {
+	if !bareHTTPURL(u) {
 		return errors.New("laya base url rejected")
 	}
 	ip := net.ParseIP(u.Hostname())
@@ -161,30 +155,10 @@ func (c *Client) SystemOne(ctx context.Context, body string, criteria map[string
 	if err != nil {
 		return Parsed{}, err
 	}
-	if ctx == nil {
-		ctx = context.Background()
-	}
-	payload := Request{
-		State: State{Body: body},
-		Questions: map[string]Question{
-			"verdict": {
-				Type:         "choice",
-				Instructions: Instructions,
-				Criteria:     criteria,
-			},
-		},
-		Model: modelEnglish,
-	}
-	raw, err := json.Marshal(payload)
+	req, err := c.newRequest(ctx, endpoint, body, criteria)
 	if err != nil {
-		return Parsed{}, errors.New("laya response unreadable")
+		return Parsed{}, err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(raw))
-	if err != nil {
-		return Parsed{}, fmt.Errorf("%w: %s", ErrTransport, scrub(err.Error(), c.apiKey, body))
-	}
-	req.Header.Set("Authorization", "Bearer "+c.apiKey)
-	req.Header.Set("Content-Type", "application/json")
 	resp, err := c.httpClient.Do(req)
 	if resp != nil && resp.Body != nil {
 		defer resp.Body.Close()
@@ -196,6 +170,10 @@ func (c *Client) SystemOne(ctx context.Context, body string, criteria map[string
 		b, _ := io.ReadAll(io.LimitReader(resp.Body, 2048))
 		return Parsed{}, fmt.Errorf("laya http %d: %s", resp.StatusCode, scrub(detailText(b), c.apiKey, body))
 	}
+	return decodeVerdict(resp.Body)
+}
+
+func decodeVerdict(r io.Reader) (Parsed, error) {
 	var decoded struct {
 		Model   string `json:"model"`
 		Answers map[string]struct {
@@ -207,7 +185,7 @@ func (c *Client) SystemOne(ctx context.Context, body string, criteria map[string
 			Truncated json.RawMessage `json:"truncated"`
 		} `json:"usage"`
 	}
-	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&decoded); err != nil {
+	if err := json.NewDecoder(io.LimitReader(r, 1<<20)).Decode(&decoded); err != nil {
 		return Parsed{}, errors.New("laya response unreadable")
 	}
 	if usageCut(decoded.Usage.Truncated) {
@@ -272,4 +250,43 @@ func scrub(msg, secret, body string) string {
 		msg = msg[:180]
 	}
 	return msg
+}
+
+// bareHTTPURL is true for an http(s) URL with no path, query, fragment, or opaque part.
+func bareHTTPURL(u *url.URL) bool {
+	if u.Scheme != "http" && u.Scheme != "https" {
+		return false
+	}
+	if u.Path != "" && u.Path != "/" {
+		return false
+	}
+	return u.RawQuery == "" && u.Fragment == "" && u.Opaque == ""
+}
+
+func (c *Client) newRequest(ctx context.Context, endpoint, body string, criteria map[string]string) (*http.Request, error) {
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	payload := Request{
+		State: State{Body: body},
+		Questions: map[string]Question{
+			"verdict": {
+				Type:         "choice",
+				Instructions: Instructions,
+				Criteria:     criteria,
+			},
+		},
+		Model: modelEnglish,
+	}
+	raw, err := json.Marshal(payload)
+	if err != nil {
+		return nil, errors.New("laya response unreadable")
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(raw))
+	if err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrTransport, scrub(err.Error(), c.apiKey, body))
+	}
+	req.Header.Set("Authorization", "Bearer "+c.apiKey)
+	req.Header.Set("Content-Type", "application/json")
+	return req, nil
 }

@@ -3,16 +3,24 @@ package front
 import (
 	"context"
 	"encoding/json"
+	"os"
+	"strings"
 
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/laya"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
 	"github.com/mark3labs/mcp-go/mcp"
 	"github.com/mark3labs/mcp-go/server"
 )
 
 // RunHost serves domain MCP tools on stdio.
-func RunHost(ctx context.Context, svc *adaptermap.Service, dec *shadow.Decider) error {
+// The Laya decider is shadow only; its result never feeds another tool.
+func RunHost(ctx context.Context, svc *adaptermap.Service) error {
+	dec, err := LayaDecider(svc, os.Getenv)
+	if err != nil {
+		return err
+	}
 	s := server.NewMCPServer("context-efficiency-mcp", "0.1.0")
 
 	s.AddTool(mcp.NewTool("recall",
@@ -168,4 +176,19 @@ func handoffReadHandler(svc *adaptermap.Service) func(context.Context, mcp.CallT
 		b, _ := json.Marshal(h)
 		return mcp.NewToolResultText(string(b)), nil
 	}
+}
+
+// LayaDecider fails closed only when a key is set and the base URL is rejected.
+// An empty key still starts the process. Decide then returns the key error.
+func LayaDecider(svc *adaptermap.Service, getenv func(string) string) (*shadow.Decider, error) {
+	key := strings.TrimSpace(getenv("LAYA_API_KEY"))
+	base := ""
+	if key != "" {
+		base = getenv("LAYA_BASE_URL")
+	}
+	client, err := laya.NewClient(base, key)
+	if err != nil {
+		return nil, err
+	}
+	return shadow.NewDecider(client, svc), nil
 }

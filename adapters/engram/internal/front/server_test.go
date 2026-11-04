@@ -92,3 +92,19 @@ func TestDecideShadowDisagreementKeepsActual(t *testing.T) {
 		t.Fatal(caller.body)
 	}
 }
+
+func TestLayaDecider(t *testing.T) {
+	env := map[string]string{"LAYA_API_KEY": "  ", "LAYA_BASE_URL": "http://example.com:1"}
+	get := func(k string) string { return env[k] }
+	if d, err := LayaDecider(nil, get); err != nil || d == nil {
+		t.Fatalf("empty key must still start: %v", err)
+	}
+	env["LAYA_API_KEY"] = "k-test"
+	if _, err := LayaDecider(nil, get); err == nil {
+		t.Fatal("non-loopback url accepted with key set")
+	}
+	env["LAYA_BASE_URL"] = ""
+	if d, err := LayaDecider(nil, get); err != nil || d == nil {
+		t.Fatal(err)
+	}
+}

@@ -74,37 +74,53 @@ func caseFor(path string, row rawFixture) (Case, error) {
 	if row.ID == "" {
 		return Case{}, fmt.Errorf("fixture row missing id")
 	}
+	fill, ok := fillers[path]
+	if !ok {
+		return Case{}, fmt.Errorf("fixture path")
+	}
 	c := Case{ID: row.ID, Path: path, Actual: row.Actual}
-	switch path {
-	case PathGo:
+	if !fill(&c, row) {
+		return Case{}, fmt.Errorf("fixture %s missing %s", row.ID, featureKey[path])
+	}
+	return c, nil
+}
+
+var featureKey = map[string]string{PathGo: "go", PathPR: "pr", PathStop: "stop", PathAudit: "audit"}
+
+// fillers copy one path's features into c and render its body. False means the features are missing.
+var fillers = map[string]func(c *Case, row rawFixture) bool{
+	PathGo: func(c *Case, row rawFixture) bool {
 		if row.Go == nil {
-			return Case{}, fmt.Errorf("fixture %s missing go", row.ID)
+			return false
 		}
-		c.Go = *row.Go
-		c.Action = row.Go.Action
+		c.Go, c.Action = *row.Go, row.Go.Action
 		c.Body = RenderGo(c.Go)
-	case PathPR:
+		return true
+	},
+	PathPR: func(c *Case, row rawFixture) bool {
 		if row.PR == nil {
-			return Case{}, fmt.Errorf("fixture %s missing pr", row.ID)
+			return false
 		}
 		c.PR = *row.PR
 		c.Body = RenderPR(c.PR)
-	case PathStop:
+		return true
+	},
+	PathStop: func(c *Case, row rawFixture) bool {
 		if row.Stop == nil {
-			return Case{}, fmt.Errorf("fixture %s missing stop", row.ID)
+			return false
 		}
 		c.Stop = *row.Stop
 		c.Body = RenderStop(c.Stop)
-	case PathAudit:
+		return true
+	},
+	PathAudit: func(c *Case, row rawFixture) bool {
 		if row.Audit == nil {
-			return Case{}, fmt.Errorf("fixture %s missing audit", row.ID)
+			return false
 		}
 		c.Audit = *row.Audit
 		c.Body = RenderAudit(c.Audit)
-	default:
-		return Case{}, fmt.Errorf("fixture path")
-	}
-	return c, nil
+		return true
+	},
 }
 
 // RunFixtures loads the embedded rows and runs them. The bool is true when Laya is down.

@@ -64,19 +64,9 @@ func (d *Decider) now() time.Time {
 // Decide screens the call, asks Laya, and retains metadata only.
 // Caller-supplied actual is stored as given.
 func (d *Decider) Decide(ctx context.Context, in Input) (Outcome, error) {
-	if err := Screen(in.Path, in.Action, in.Actual, in.Labels, in.StateBody); err != nil {
-		return Outcome{}, err
-	}
-	criteria, err := Criteria(in.Path)
+	criteria, requestID, err := d.precheck(in)
 	if err != nil {
 		return Outcome{}, err
-	}
-	requestID, err := normalizeRequestID(in.RequestID)
-	if err != nil {
-		return Outcome{}, errors.New("laya request id")
-	}
-	if d == nil || d.Caller == nil {
-		return Outcome{}, errors.New("laya decider not set")
 	}
 	parsed, err := d.Caller.SystemOne(ctx, in.StateBody, criteria)
 	if err != nil {
@@ -127,4 +117,23 @@ func randomHexID() (string, error) {
 		return "", err
 	}
 	return hex.EncodeToString(buf), nil
+}
+
+// precheck screens the input before any Laya call.
+func (d *Decider) precheck(in Input) (map[string]string, string, error) {
+	if err := Screen(in.Path, in.Action, in.Actual, in.Labels, in.StateBody); err != nil {
+		return nil, "", err
+	}
+	criteria, err := Criteria(in.Path)
+	if err != nil {
+		return nil, "", err
+	}
+	requestID, err := normalizeRequestID(in.RequestID)
+	if err != nil {
+		return nil, "", errors.New("laya request id")
+	}
+	if d == nil || d.Caller == nil {
+		return nil, "", errors.New("laya decider not set")
+	}
+	return criteria, requestID, nil
 }
