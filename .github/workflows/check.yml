@@ -39,6 +39,22 @@ jobs:
         run: |
           source ./scripts/ci-prepare-engram.sh
           echo "ENGRAM_BIN=${ENGRAM_BIN}" >> "$GITHUB_ENV"
+      - name: Compare extracted binary to pin binary_sha256
+        shell: bash
+        run: |
+          set -euo pipefail
+          bin="adapters/engram/.ci/engram"
+          if [[ ! -f "${bin}" ]]; then
+            echo "mismatch: missing ${bin}" >&2
+            exit 1
+          fi
+          got="$(sha256sum "${bin}" | awk '{print $1}')"
+          want="$(python3 -c 'import json; print(json.load(open("adapters/engram/pin.json", encoding="utf-8"))["binary_sha256"])')"
+          if [[ -z "${got}" || "${got}" != "${want}" ]]; then
+            echo "mismatch: got ${got} want ${want}" >&2
+            exit 1
+          fi
+          echo "match ${got}"
       - name: Go unit and integration tests
         run: ./scripts/check-go.sh
 

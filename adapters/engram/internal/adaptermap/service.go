@@ -143,14 +143,7 @@ func (s *Service) HandoffWrite(ctx context.Context, h domain.Handoff, scopeStr s
 	}
 	title := content.HandoffTitle
 	topic := scope.HandoffTopicKey(token)
-	id, err := s.save(ctx, title, prepared, topic)
-	if err != nil {
-		return "", err
-	}
-	if err := s.verifyStoredBody(ctx, id, prepared); err != nil {
-		return "", err
-	}
-	return id, nil
+	return s.save(ctx, title, prepared, topic)
 }
 
 func (s *Service) HandoffRead(ctx context.Context, scopeStr string) (*domain.Handoff, error) {

@@ -14,7 +14,7 @@ Source: [Gentleman-Programming/engram v3.6.0](https://github.com/Gentleman-Progr
 
 | Domain | Child tool | Mapping |
 | --- | --- | --- |
-| `recall` | `mem_search` | Query `<token> <user query>`, `match_mode` default `all`, `limit` 1–20; filter rows where title’s first field **equals** `<token>`; skip `handoff` titles; `mem_get_observation` per id; `unknown_project` → `[]` |
+| `recall` | `mem_search` | Query `<token> <user query>`, `match_mode` default `all`; `limit` default 5, clamp 1–20; child window at least 20, then trim to `limit`; filter rows where title’s first field **equals** `<token>`; skip `handoff` titles; `mem_get_observation` per id; `unknown_project`, unparseable `mem_search` text, and nil `results` → `[]`; filter miss → `null` |
 | `retain` | `mem_save` | Title `<token> <clip>`; body JSON `RetainBody`; `capture_prompt: false`; no `topic_key`; pre-check private tags and 50k truncation |
 | `handoff_write` | `mem_save` | Title literal `handoff`; `topic_key` `handoff/<token>`; body JSON `Handoff` only; same pre-checks + post `mem_get_observation` compare |
 | `handoff_read` | `mem_search` + `mem_get_observation` | Query exactly `handoff/<token>`; keep row where `topic_key` equals query; `unknown_project` → null |
@@ -143,7 +143,7 @@ When `handoff_write` / `handoff_read` map to **none** on a backend:
 | Mapping doc + user config | Tool names close enough | No extra binary |
 | Thin wrapper (Rust / Go / Bun TS) | Need domain tool names or inline `retain` | Maintained adapter |
 
-GMA-425 selects the default backend; this mapping stays valid for alternates.
+Engram v3.6.0 is the default (GMA-429); this mapping stays valid for alternates.
 
 ## Related docs
 

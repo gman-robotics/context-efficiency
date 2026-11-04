@@ -1,0 +1,31 @@
+name: engram-pin-check
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pin-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Compare extracted engram to binary_sha256
+        shell: bash
+        run: |
+          set -euo pipefail
+          source ./scripts/ci-prepare-engram.sh
+          bin="adapters/engram/.ci/engram"
+          if [[ ! -f "${bin}" ]]; then
+            echo "mismatch: missing ${bin}" >&2
+            exit 1
+          fi
+          got="$(sha256sum "${bin}" | awk '{print $1}')"
+          want="$(python3 -c 'import json; print(json.load(open("adapters/engram/pin.json", encoding="utf-8"))["binary_sha256"])')"
+          if [[ -z "${got}" || -z "${want}" || "${got}" != "${want}" ]]; then
+            echo "mismatch: got ${got} want ${want}" >&2
+            exit 1
+          fi
+          echo "match ${got}"
