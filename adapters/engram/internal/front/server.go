@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/adaptermap"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/decide"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/domain"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/laya"
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
@@ -49,6 +50,12 @@ func RunHost(ctx context.Context, svc *adaptermap.Service) error {
 		mcp.WithString("scope"),
 	), handoffReadHandler(svc))
 
+	s.AddTool(mcp.NewTool("decide",
+		mcp.WithDescription("Plain deterministic decision for routine_go_nogo, pr_class, or tool_failure_stop. Fixed rules, no model. Effect is none; act on label. An error starting with refused: means stop."),
+		mcp.WithString("path", mcp.Required()),
+		mcp.WithObject("features", mcp.Required()),
+	), decideHandler)
+
 	s.AddTool(mcp.NewTool("decide_shadow",
 		mcp.WithDescription("Record a shadow label beside the caller-supplied actual. Follow actual. Effect is none. A missing key, transport error, non-2xx, or truncated window is not a no_go."),
 		mcp.WithString("path", mcp.Required()),
@@ -60,6 +67,28 @@ func RunHost(ctx context.Context, svc *adaptermap.Service) error {
 	), decideShadowHandler(dec))
 
 	return server.ServeStdio(s)
+}
+
+func decideHandler(ctx context.Context, req mcp.CallToolRequest) (*mcp.CallToolResult, error) {
+	args := req.GetArguments()
+	path, _ := args["path"].(string)
+	features, ok := args["features"].(map[string]interface{})
+	if !ok {
+		return mcp.NewToolResultError("refused: features"), nil
+	}
+	raw, err := json.Marshal(features)
+	if err != nil {
+		return mcp.NewToolResultError("refused: features"), nil
+	}
+	out, err := decide.Decide(path, raw)
+	if err != nil {
+		return mcp.NewToolResultError(err.Error()), nil
+	}
+	b, err := json.Marshal(out)
+	if err != nil {
+		return mcp.NewToolResultError("decide response unreadable"), nil
+	}
+	return mcp.NewToolResultText(string(b)), nil
 }
 
 func decideShadowHandler(dec *shadow.Decider) func(context.Context, mcp.CallToolRequest) (*mcp.CallToolResult, error) {
