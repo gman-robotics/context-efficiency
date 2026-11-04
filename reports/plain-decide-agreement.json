@@ -1,0 +1,35 @@
+{
+  "generated_at": "2026-11-04T15:56:18Z",
+  "mode": "plain",
+  "note": "Agreement is 100% by construction: the fixtures' actual labels are validated against the same shadow.Rule* functions this layer calls (shadow.RunCases refuses on drift). This is not an independent result; it only shows the plain layer wires those rules correctly.",
+  "paths": [
+    {
+      "path": "routine_go_nogo",
+      "total": 20,
+      "agree": 20,
+      "display_pct": 100,
+      "threshold_pct": 90,
+      "pass": true,
+      "misses": []
+    },
+    {
+      "path": "pr_class",
+      "total": 20,
+      "agree": 20,
+      "display_pct": 100,
+      "threshold_pct": 95,
+      "pass": true,
+      "misses": []
+    },
+    {
+      "path": "tool_failure_stop",
+      "total": 12,
+      "agree": 12,
+      "display_pct": 100,
+      "threshold_pct": null,
+      "pass": null,
+      "misses": []
+    }
+  ],
+  "overall_pass": true
+}

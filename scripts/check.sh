@@ -30,6 +30,8 @@ required=(
   adapters/laya/laya-requirements.lock
   adapters/laya/run-laya-serve.sh
   docs/laya-shadow.md
+  docs/plain-decide.md
+  skills/verify-context-efficiency/features/plain-decide-unit.md
   skills/verify-context-efficiency/features/laya-shadow-unit.md
   .grok-plugin/plugin.json
   .cursor-plugin/plugin.json
@@ -299,7 +301,7 @@ for needle in "0.4.22" "891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7
 done
 
 skill="plugin/skills/routine-hygiene/SKILL.md"
-for needle in "decide_shadow" "routine:layashadow" "refused:"; do
+for needle in "decide_shadow" "routine:layashadow" "refused:" "Call \`decide\`"; do
   if ! grep -F "${needle}" "${skill}" >/dev/null; then
     echo "check: FAIL skill missing ${needle}"
     exit 1
