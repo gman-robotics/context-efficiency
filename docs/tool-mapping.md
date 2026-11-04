@@ -39,7 +39,7 @@ Types: **Scope** `bot` \| `shared` \| `routine:<name>` \| `task:<id>`; **MemoryI
 ### `simple-memory-mcp` (npm / [chrisribe/simple-memory-mcp](https://github.com/chrisribe/simple-memory-mcp)) — **Node — out of policy**
 
 - **Runtime:** Node.js; start with `npx -y simple-memory-mcp` ([README](https://github.com/chrisribe/simple-memory-mcp#-quick-start)).
-- **Not in policy** for context-efficiency defaults (Node server). Listed so docs do not confuse it with the Bun fork below.
+- **Not in policy** for context-efficiency defaults (Node server). Listed so docs do not confuse it with the separate Bun project below.
 
 **Published MCP tools** ([README § MCP Tools](https://github.com/chrisribe/simple-memory-mcp#%EF%B8%8F-mcp-tools)):
 
@@ -86,7 +86,7 @@ Also: `memory_list`, `memory_read`, `memory_update`, `memory_delete`.
 
 ### In-policy direction (GMA-425)
 
-Prefer a **Rust**, **Go**, or **Bun TypeScript** MCP with add + search (and optional list). The Bun [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) fork is the only named candidate above that matches the runtime rule; its `ingest_document` shape may still require a thin adapter for `retain`.
+Prefer a **Rust**, **Go**, or **Bun TypeScript** MCP with add + search (and optional list). The Bun [mrorigo/simple-memory-mcp](https://github.com/mrorigo/simple-memory-mcp) project (a separate repo, not a fork) is the only named candidate above that matches the runtime rule; its `ingest_document` shape may still require a thin adapter for `retain`.
 
 ---
 
