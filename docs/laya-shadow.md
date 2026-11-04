@@ -94,9 +94,9 @@ Prefetch the weights once with `HF_HUB_OFFLINE` unset. After that, `adapters/lay
 {"model.safetensors":"891102d372688fc2a094dac56a384bc537b87c63f21f9f3dac0be2b7cbc8d86c"}
 ```
 
-`LAYA_REVISION=reviewed`. The script forces `LAYA_HOST=127.0.0.1` and defaults `LAYA_PORT` to 8792. It loads `LAYA_API_KEY` from the environment or the keychain service `gman-laya-api-key`. It does not print the key. A keychain prompt there may block. The MCP launcher must not.
+`LAYA_REVISION=reviewed`. The script forces `LAYA_HOST=127.0.0.1` and defaults `LAYA_PORT` to 8792. It loads `LAYA_API_KEY` from the environment or the keychain service `gman-laya-api-key`. It does not print the key. A keychain prompt there may block.
 
-The MCP launcher bounds that keychain read to about 2 seconds and still starts when the read fails or times out. `mcp.json` does not contain the key.
+The MCP launcher (`plugin/bin/run-context-efficiency-mcp.sh`) reads no Laya key and no keychain (GMA-551). To try `decide_shadow` from the plugin, export `LAYA_API_KEY` in the MCP client's own environment. `mcp.json` does not contain the key.
 
 ## Related
 
