@@ -77,7 +77,9 @@ var WantTools = []string{"decide", "handoff_read", "handoff_write", "recall", "r
 func checkTools(got []string) error {
 	sorted := append([]string(nil), got...)
 	sort.Strings(sorted)
-	if strings.Join(sorted, ",") != strings.Join(WantTools, ",") {
+	want := append([]string(nil), WantTools...)
+	sort.Strings(want)
+	if strings.Join(sorted, ",") != strings.Join(want, ",") {
 		return fmt.Errorf("tools %v, want %v", sorted, WantTools)
 	}
 	return nil

@@ -1,6 +1,6 @@
 # Local end-to-end (GMA-543)
 
-Commit: `cd7b2220cd516764ba4b4e21a3c5ae24b0a177ec`. Server: `context-efficiency-mcp 0.1.0`.
+Commit: `100fb841187c42534c848e0f4ad9aba04e112878`. Server: `context-efficiency-mcp 0.1.0`.
 
 Tools listed: decide, handoff_read, handoff_write, recall, retain.
 

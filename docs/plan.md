@@ -131,7 +131,7 @@ For any routine the Bot creates or runs:
 
 ### 6. Decision layer (plain)
 
-The `decide` tool runs plain rules in code (`internal/rules`). Four paths: routine go or no-go, PR tier, tool retry, and audit bucket. No model, server, or key. The agreement report is `cmd/plain-decide-report`. Contract: `docs/plain-decide.md`. The Laya shadow layer was removed in GMA-567.
+The `decide` tool runs plain rules in code (`internal/rules`). Three paths: routine go or no-go, PR tier, and tool retry (`audit_sort` is refused). No model, server, or key. The agreement report is `cmd/plain-decide-report`. Contract: `docs/plain-decide.md`. The Laya shadow layer was removed in GMA-567.
 
 ## Backend Support
 

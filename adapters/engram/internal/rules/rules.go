@@ -61,7 +61,7 @@ type Case struct {
 	Audit  AuditFeatures
 }
 
-// Rule applies the rule for c.Path. Fixture tests and the plain report use it.
+// Rule applies the rule for c.Path. The fixture census test uses it.
 func Rule(c Case) (string, error) {
 	switch c.Path {
 	case PathGo:
