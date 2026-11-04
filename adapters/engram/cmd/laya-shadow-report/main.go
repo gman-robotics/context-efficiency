@@ -5,6 +5,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"time"
 
@@ -15,27 +16,32 @@ import (
 func main() {
 	out := flag.String("out", "reports", "directory for the agreement report")
 	flag.Parse()
-	client, err := laya.NewClient(os.Getenv("LAYA_BASE_URL"), os.Getenv("LAYA_API_KEY"))
+	os.Exit(run(*out, os.Getenv("LAYA_BASE_URL"), os.Getenv("LAYA_API_KEY"), os.Stderr))
+}
+
+// run returns the process exit code. Messages never include the key.
+func run(out, baseURL, apiKey string, stderr io.Writer) int {
+	client, err := laya.NewClient(baseURL, apiKey)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "laya base url rejected")
-		os.Exit(1)
+		return fail(stderr, "laya base url rejected")
 	}
 	rep, down, err := shadow.RunFixtures(context.Background(), client, time.Now())
-	if errors.Is(err, laya.ErrKey) {
-		fmt.Fprintln(os.Stderr, "laya api key not set")
-		os.Exit(1)
+	switch {
+	case errors.Is(err, laya.ErrKey):
+		return fail(stderr, "laya api key not set")
+	case err != nil:
+		return fail(stderr, "laya shadow report failed")
+	case down:
+		return fail(stderr, "laya down")
 	}
-	if err != nil {
-		fmt.Fprintln(os.Stderr, "laya shadow report failed")
-		os.Exit(1)
+	if err := shadow.WriteReport(out, rep); err != nil {
+		fmt.Fprintln(stderr, "laya shadow report failed")
+		return shadow.ReportExit(false, false)
 	}
-	if down {
-		fmt.Fprintln(os.Stderr, "laya down")
-		os.Exit(1)
-	}
-	if err := shadow.WriteReport(*out, rep); err != nil {
-		fmt.Fprintln(os.Stderr, "laya shadow report failed")
-		os.Exit(shadow.ReportExit(false, false))
-	}
-	os.Exit(shadow.ReportExit(true, rep.OverallPass))
+	return shadow.ReportExit(true, rep.OverallPass)
+}
+
+func fail(stderr io.Writer, msg string) int {
+	fmt.Fprintln(stderr, msg)
+	return 1
 }

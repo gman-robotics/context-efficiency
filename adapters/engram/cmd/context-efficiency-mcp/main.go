@@ -60,14 +60,18 @@ func main() {
 	defer client.Close()
 
 	svc := &adaptermap.Service{Client: client}
+	if err := serve(ctx, svc); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// serve wires the shadow-only Laya decider beside the Engram tools.
+func serve(ctx context.Context, svc *adaptermap.Service) error {
 	layaClient, err := openLaya()
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
-	dec := shadow.NewDecider(layaClient, svc)
-	if err := front.RunHost(ctx, svc, dec); err != nil {
-		log.Fatal(err)
-	}
+	return front.RunHost(ctx, svc, shadow.NewDecider(layaClient, svc))
 }
 
 // openLaya fails closed only when a key is set and the base URL is rejected.
