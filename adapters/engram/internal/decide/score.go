@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/rules"
 )
 
 // Circularity is printed in every report. The fixtures are checked against the
 // same rules this layer calls, so agreement is 100% by construction.
-const Circularity = "Agreement is 100% by construction: the fixtures' actual labels are validated against the same shadow.Rule* functions this layer calls (shadow.RunCases refuses on drift). This is not an independent result; it only shows the plain layer wires those rules correctly."
+const Circularity = "Agreement is 100% by construction: the fixtures' actual labels are validated against the same rules.Rule* functions this layer calls. This is not an independent result; it only shows the plain layer wires those rules correctly."
 
 // PathScore is one path's agreement.
 type PathScore struct {
@@ -36,7 +36,7 @@ type Report struct {
 }
 
 // Score runs every case on a plain path through Decide. Cases on other paths are skipped.
-func Score(cases []shadow.Case, now time.Time) (Report, error) {
+func Score(cases []rules.Case, now time.Time) (Report, error) {
 	by := map[string]*PathScore{}
 	for _, p := range Paths {
 		by[p] = &PathScore{Path: p, Misses: []string{}}
@@ -59,7 +59,7 @@ func Score(cases []shadow.Case, now time.Time) (Report, error) {
 	return rep, nil
 }
 
-func scoreCase(ps *PathScore, c shadow.Case) error {
+func scoreCase(ps *PathScore, c rules.Case) error {
 	raw, err := features(c)
 	if err != nil {
 		return err
@@ -76,8 +76,8 @@ func scoreCase(ps *PathScore, c shadow.Case) error {
 
 // gate fills the display pct and, for gated paths, the threshold and pass bit.
 func gate(ps PathScore) PathScore {
-	ps.DisplayPct = shadow.DisplayPct(ps.Agree, ps.Total)
-	g, ok := shadow.GatePct(ps.Path)
+	ps.DisplayPct = rules.DisplayPct(ps.Agree, ps.Total)
+	g, ok := rules.GatePct(ps.Path)
 	if !ok {
 		return ps
 	}
@@ -86,13 +86,13 @@ func gate(ps PathScore) PathScore {
 	return ps
 }
 
-func features(c shadow.Case) ([]byte, error) {
+func features(c rules.Case) ([]byte, error) {
 	switch c.Path {
-	case shadow.PathGo:
+	case rules.PathGo:
 		return json.Marshal(c.Go)
-	case shadow.PathPR:
+	case rules.PathPR:
 		return json.Marshal(c.PR)
-	case shadow.PathStop:
+	case rules.PathStop:
 		return json.Marshal(c.Stop)
 	}
 	return nil, fmt.Errorf("path")

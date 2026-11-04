@@ -92,7 +92,7 @@ Optional backends (documented, not shipped):
 - `retain(text: string, tags: string[], importance: number, scope: Scope) → id`
 - `handoff_write(handoff: Handoff, scope: Scope) → pathOrId`
 - `handoff_read(scope: Scope) → Handoff | null`
-- `decide_shadow(path, state_body, actual, action?, labels?, request_id?) → record; effect none. Follow actual.`
+- `decide(path, features) → label; effect none.`
 
 **Tech note**: Prefer Rust or Go for any custom thin wrapper (single static binary, runs natively on Bot computer). Prefer composing existing OSS first. If implementing a custom MCP server in TypeScript, prefer **Bun** over Node.js (faster startup, single-binary option via `bun build --compile`, better native performance).
 
@@ -124,14 +124,14 @@ Used at task end, end of day, or when context feels heavy:
 ### 5. Routine Hygiene Skill (`plugin/skills/routine-hygiene/SKILL.md`)
 
 For any routine the Bot creates or runs:
-- Start: call `decide_shadow` for `routine_go_nogo` and follow `actual`. A Laya miss continues from `actual`. Stop when `actual` is `no_go` or the error starts with `refused:`.
+- Start: call `decide` for `routine_go_nogo` and follow `label`. Stop when `label` is `no_go` or the error starts with `refused:`.
 - Short `recall` for that routine's scope.
 - End: `retain` outcome + write results to a file rather than leaving them in the turn.
 - Prefer short routine prompts that point at files/memory.
 
-### 6. Decision layer (shadow)
+### 6. Decision layer (plain)
 
-Laya runs as a separate process. Four paths: routine go or no-go, PR tier, tool retry, and audit bucket. The log stores metadata only, at scope `routine:layashadow`. A refusal stops before HTTP and before save. The agreement report is `cmd/laya-shadow-report`. Follow `actual`. A Laya miss continues the routine. Contract: `docs/laya-shadow.md`.
+The `decide` tool runs plain rules in code (`internal/rules`). Four paths: routine go or no-go, PR tier, tool retry, and audit bucket. No model, server, or key. The agreement report is `cmd/plain-decide-report`. Contract: `docs/plain-decide.md`. The Laya shadow layer was removed in GMA-567.
 
 ## Backend Support
 

@@ -1,15 +1,9 @@
-package shadow
+package rules
 
 import (
-	"context"
 	"embed"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"strings"
-	"time"
-
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/laya"
 )
 
 //go:embed fixtures/*.json
@@ -121,74 +115,4 @@ var fillers = map[string]func(c *Case, row rawFixture) bool{
 		c.Body = RenderAudit(c.Audit)
 		return true
 	},
-}
-
-// RunFixtures loads the embedded rows and runs them. The bool is true when Laya is down.
-func RunFixtures(ctx context.Context, caller Caller, now time.Time) (Report, bool, error) {
-	cases, err := LoadFixtures()
-	if err != nil {
-		return Report{}, false, err
-	}
-	return RunCases(ctx, caller, cases, now)
-}
-
-// RunCases refuses to call Laya when a fixture actual disagrees with Rule.
-// A key or transport error with zero successes is down. Other Laya errors become items.
-func RunCases(ctx context.Context, caller Caller, cases []Case, now time.Time) (Report, bool, error) {
-	dec := NewDecider(caller, nil)
-	dec.Now = func() time.Time { return now }
-	by := map[string][]Item{
-		PathGo:    {},
-		PathPR:    {},
-		PathStop:  {},
-		PathAudit: {},
-	}
-	successes := 0
-	for _, c := range cases {
-		want, err := Rule(c)
-		if err != nil {
-			return Report{}, false, fmt.Errorf("fixture rule: %s", c.ID)
-		}
-		if want != c.Actual {
-			return Report{}, false, fmt.Errorf("fixture actual drift: %s", c.ID)
-		}
-		out, err := dec.Decide(ctx, Input{
-			Path:      c.Path,
-			StateBody: c.Body,
-			Actual:    c.Actual,
-			Action:    c.Action,
-			Labels:    c.Labels,
-		})
-		if err != nil {
-			if successes == 0 && errors.Is(err, laya.ErrKey) {
-				return Report{}, true, err
-			}
-			if successes == 0 && errors.Is(err, laya.ErrTransport) {
-				return Report{}, true, nil
-			}
-			if strings.HasPrefix(err.Error(), "refused:") {
-				return Report{}, false, fmt.Errorf("fixture refused: %s", c.ID)
-			}
-			by[c.Path] = append(by[c.Path], Item{
-				ID:        c.ID,
-				Actual:    c.Actual,
-				StateHash: StateHash(c.Body),
-				Agree:     false,
-				Err:       safeErr(err, c.Body),
-			})
-			continue
-		}
-		successes++
-		by[c.Path] = append(by[c.Path], Item{
-			ID:               c.ID,
-			Actual:           out.Actual,
-			Shadow:           out.Shadow,
-			Confidence:       out.Confidence,
-			AnswerConfidence: out.AnswerConfidence,
-			Model:            out.Model,
-			StateHash:        out.StateHash,
-			Agree:            out.Agree,
-		})
-	}
-	return BuildReport(now, by), false, nil
 }

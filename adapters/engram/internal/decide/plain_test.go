@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/rules"
 )
 
 func TestDecideGo(t *testing.T) {
@@ -19,7 +19,7 @@ func TestDecideGo(t *testing.T) {
 		{`{"name_ok":true,"action":"write_file","blocked":true}`, "no_go"},
 	}
 	for _, c := range cases {
-		got, err := Decide(shadow.PathGo, []byte(c.in))
+		got, err := Decide(rules.PathGo, []byte(c.in))
 		if err != nil || got.Label != c.want || got.Effect != "none" || got.Rule == "" {
 			t.Fatalf("%s: got %+v err %v want %s", c.in, got, err, c.want)
 		}
@@ -34,7 +34,7 @@ func TestDecidePRFirstMatch(t *testing.T) {
 		{`{"config_tweak":true}`, "T0"},
 	}
 	for _, c := range cases {
-		got, err := Decide(shadow.PathPR, []byte(c.in))
+		got, err := Decide(rules.PathPR, []byte(c.in))
 		if err != nil || got.Label != c.want {
 			t.Fatalf("%s: got %+v err %v want %s", c.in, got, err, c.want)
 		}
@@ -49,7 +49,7 @@ func TestDecideStop(t *testing.T) {
 		{`{"same_tool":true,"same_error_class":false,"count":9}`, "continue"},
 	}
 	for _, c := range cases {
-		got, err := Decide(shadow.PathStop, []byte(c.in))
+		got, err := Decide(rules.PathStop, []byte(c.in))
 		if err != nil || got.Label != c.want {
 			t.Fatalf("%s: got %+v err %v want %s", c.in, got, err, c.want)
 		}
@@ -58,14 +58,14 @@ func TestDecideStop(t *testing.T) {
 
 func TestDecideRefuses(t *testing.T) {
 	bad := []struct{ path, in string }{
-		{shadow.PathAudit, `{"kind":"naming"}`},
+		{rules.PathAudit, `{"kind":"naming"}`},
 		{"nope", `{}`},
-		{shadow.PathGo, `{"name_ok":true,"action":"delete_all"}`},
-		{shadow.PathGo, `{"name_ok":true,"action":"write_file","extra":1}`},
-		{shadow.PathGo, ``},
-		{shadow.PathGo, `{"name_ok":true,"action":"write_file"} {}`},
-		{shadow.PathPR, `{}`},
-		{shadow.PathStop, `{"count":-1}`},
+		{rules.PathGo, `{"name_ok":true,"action":"delete_all"}`},
+		{rules.PathGo, `{"name_ok":true,"action":"write_file","extra":1}`},
+		{rules.PathGo, ``},
+		{rules.PathGo, `{"name_ok":true,"action":"write_file"} {}`},
+		{rules.PathPR, `{}`},
+		{rules.PathStop, `{"count":-1}`},
 	}
 	for _, b := range bad {
 		_, err := Decide(b.path, []byte(b.in))
@@ -76,7 +76,7 @@ func TestDecideRefuses(t *testing.T) {
 }
 
 func TestScoreFixtures(t *testing.T) {
-	cases, err := shadow.LoadFixtures()
+	cases, err := rules.LoadFixtures()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -98,8 +98,8 @@ func TestScoreFixtures(t *testing.T) {
 }
 
 func TestScoreCountsMiss(t *testing.T) {
-	c := shadow.Case{ID: "x", Path: shadow.PathGo, Actual: "go", Go: shadow.GoFeatures{NameOK: false, Action: "write_file"}}
-	rep, err := Score([]shadow.Case{c}, time.Unix(0, 0))
+	c := rules.Case{ID: "x", Path: rules.PathGo, Actual: "go", Go: rules.GoFeatures{NameOK: false, Action: "write_file"}}
+	rep, err := Score([]rules.Case{c}, time.Unix(0, 0))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -114,19 +114,19 @@ func TestGateBoundary(t *testing.T) {
 		want         bool
 	}{{18, 20, true}, {17, 20, false}, {0, 0, false}}
 	for _, c := range cases {
-		got := gate(PathScore{Path: shadow.PathGo, Agree: c.agree, Total: c.total})
+		got := gate(PathScore{Path: rules.PathGo, Agree: c.agree, Total: c.total})
 		if got.Pass == nil || *got.Pass != c.want || *got.ThresholdPct != 90 {
 			t.Fatalf("%+v: got %+v", c, got)
 		}
 	}
-	if got := gate(PathScore{Path: shadow.PathStop, Agree: 1, Total: 1}); got.Pass != nil || got.DisplayPct != 100 {
+	if got := gate(PathScore{Path: rules.PathStop, Agree: 1, Total: 1}); got.Pass != nil || got.DisplayPct != 100 {
 		t.Fatalf("stop gated: %+v", got)
 	}
 }
 
 func TestWriteFiles(t *testing.T) {
 	dir := t.TempDir()
-	rep := Report{Note: Circularity, Paths: []PathScore{gate(PathScore{Path: shadow.PathPR, Agree: 19, Total: 20})}}
+	rep := Report{Note: Circularity, Paths: []PathScore{gate(PathScore{Path: rules.PathPR, Agree: 19, Total: 20})}}
 	if err := Write(dir, rep); err != nil {
 		t.Fatal(err)
 	}

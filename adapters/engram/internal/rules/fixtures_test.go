@@ -1,11 +1,10 @@
-package shadow
+package rules
 
 import (
 	"strings"
 	"testing"
 
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/content"
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/laya"
 )
 
 func TestFixtureCensus(t *testing.T) {
@@ -119,9 +118,6 @@ func TestFixtureCensus(t *testing.T) {
 		"audit-naming-01", "audit-naming-02", "audit-naming-03",
 		"audit-typo-01", "audit-typo-02",
 	})
-	if DeniedToken(laya.Instructions) != "" {
-		t.Fatal("instructions")
-	}
 	for _, c := range by[PathPR] {
 		if !strings.Contains(c.Body, "typos") || !strings.Contains(c.Body, "major architectural move") {
 			t.Fatal(c.ID)

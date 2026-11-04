@@ -29,11 +29,11 @@ Source: [Gentleman-Programming/engram v3.6.0](https://github.com/Gentleman-Progr
 | `retain` | Store a distilled fact | `text`, `tags`, `importance`, `scope` | `id` |
 | `handoff_write` | Persist a structured handoff | `handoff`, `scope` | `pathOrId` |
 | `handoff_read` | Load latest handoff for a scope | `scope` | `Handoff` or null |
-| `decide_shadow` | Record a shadow label beside caller-supplied `actual`. Follow `actual`. | `path`, `state_body`, `actual`, optional `action`, `labels`, `request_id` | record plus `log_id`; `effect` is `none` |
+| `decide` | Plain rule label for a path. Follow `label`. | `path`, `features` | `label`; `effect` is `none` |
 
 Types: **Scope** `bot` \| `shared` \| `routine:<name>` \| `task:<id>`; **MemoryItem** and **Handoff** as in `docs/plan.md`.
 
-Shadow rows are read with `recall` and scope `routine:layashadow`. There is no `shadow_report` tool. The public recall cap stays 20. That list is not the pass bit. Contract: `docs/laya-shadow.md`.
+The decision tool is `decide` (plain rules). Contract: `docs/plain-decide.md`.
 
 ---
 

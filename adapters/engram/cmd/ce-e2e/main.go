@@ -1,7 +1,7 @@
 // Command ce-e2e drives the plugin MCP server over stdio, through the plugin
 // launcher, and writes a pass/fail report (GMA-543). It needs ENGRAM_BIN,
 // CONTEXT_EFFICIENCY_MCP_BIN and a throwaway ENGRAM_DATA_DIR. It never sets
-// LAYA_API_KEY. Run it through scripts/e2e-local.sh.
+// model key. Run it through scripts/e2e-local.sh.
 package main
 
 import (
@@ -9,6 +9,8 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
+	"strings"
 	"time"
 
 	"github.com/mark3labs/mcp-go/client"
@@ -65,6 +67,18 @@ func initialize(ctx context.Context, c *client.Client, rep *Report) error {
 	}
 	for _, t := range tools.Tools {
 		rep.Tools = append(rep.Tools, t.Name)
+	}
+	return checkTools(rep.Tools)
+}
+
+// WantTools is the plugin's tool set. The removed shadow tool must not come back (GMA-567).
+var WantTools = []string{"decide", "handoff_read", "handoff_write", "recall", "retain"}
+
+func checkTools(got []string) error {
+	sorted := append([]string(nil), got...)
+	sort.Strings(sorted)
+	if strings.Join(sorted, ",") != strings.Join(WantTools, ",") {
+		return fmt.Errorf("tools %v, want %v", sorted, WantTools)
 	}
 	return nil
 }

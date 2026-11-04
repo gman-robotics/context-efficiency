@@ -5,7 +5,7 @@
 # through plugin/bin/run-context-efficiency-mcp.sh against a throwaway data
 # dir. Nothing is installed on the host and no Grok or Cursor config is touched.
 # The repo is mounted read-only; only reports/ is written back.
-# No LAYA_API_KEY is passed in. Exit: 0 all pass, 2 a step failed, 1 error.
+# No model key is passed in. Exit: 0 all pass, 2 a step failed, 1 error.
 set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

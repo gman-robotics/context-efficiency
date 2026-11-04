@@ -1,11 +1,9 @@
-package shadow
+package rules
 
 import (
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/laya"
 )
 
 func TestRulePrecedence(t *testing.T) {
@@ -83,9 +81,6 @@ func TestGoFeaturesHasNoFailureCount(t *testing.T) {
 }
 
 func TestCriteriaAndInstructions(t *testing.T) {
-	if DeniedToken(laya.Instructions) != "" {
-		t.Fatal(laya.Instructions)
-	}
 	for _, path := range []string{PathGo, PathPR, PathStop, PathAudit} {
 		m, err := Criteria(path)
 		if err != nil {

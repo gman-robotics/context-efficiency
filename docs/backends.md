@@ -9,7 +9,7 @@ Pluggable memory MCP for context-efficiency skills.
 | Item | Value |
 | --- | --- |
 | Adapter module | `github.com/gman-robotics/context-efficiency/adapters/engram` |
-| Domain MCP tools | `recall`, `retain`, `handoff_write`, `handoff_read`, `decide_shadow` |
+| Domain MCP tools | `recall`, `retain`, `handoff_write`, `handoff_read`, `decide` |
 | Child process | `engram mcp --project "<name>" --tools=mem_save,mem_search,mem_get_observation` |
 | Pin | `adapters/engram/pin.json` (`binary_sha256` is one linux_amd64 digest in that file; other OS archives do not match it, and those binaries fail startup with `binary sha256 mismatch`) |
 | Manifest / `mcp.json` | `.grok-plugin/plugin.json`, `.cursor-plugin/plugin.json`, root `mcp.json` (GMA-428) |
@@ -40,10 +40,6 @@ The adapter spawns the child with an **explicit** environment: `ENGRAM_DATA_DIR`
 
 ---
 
-## Laya shadow (decision layer)
-
-Laya 0.4.22 runs as a separate local process. The adapter asks it for a shadow label and still follows the caller-supplied `actual`. The contract, install, and agreement report are in `docs/laya-shadow.md`. Laya is not in the plugin (GMA-551). `LAYA_API_KEY` is not stored in `mcp.json`, and the plugin launcher reads no key and no keychain.
-
 ## Mem0 (hosted alternate)
 
 **URL:** `https://mcp.mem0.ai/mcp` ([Mem0 MCP](https://docs.mem0.ai/platform/mem0-mcp))
@@ -73,4 +69,3 @@ Laya 0.4.22 runs as a separate local process. The adapter asks it for a shadow l
 
 - `docs/tool-mapping.md` — per-backend tool tables
 - `docs/plan.md` — domain model
-- `docs/laya-shadow.md` — shadow paths, refusals, and the agreement report

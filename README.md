@@ -25,7 +25,7 @@ Core idea: skills speak a small domain (recall / retain / handoff). Backends are
 - [x] plugin.json + mcp.json scaffolding (GMA-428)
 - [x] Tool mapping docs for backends (`docs/tool-mapping.md`, `docs/backends.md`)
 - [x] Engram v3.6.0 Go adapter (`adapters/engram/`, GMA-429)
-- [x] Laya shadow decision layer (GMA-542): `decide_shadow`, routine-hygiene process skill, report command
+- [x] Plain decision layer: `decide` tool, routine-hygiene process skill, report command (Laya shadow removed in GMA-567)
 - [ ] Marketplace submission notes
 
 ## Tech Recommendations
