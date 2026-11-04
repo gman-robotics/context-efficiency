@@ -72,6 +72,13 @@ func TestEachToolFailureIsReported(t *testing.T) {
 	}
 }
 
+func TestHandoffFieldDropIsReported(t *testing.T) {
+	f := &fakeCaller{handoff: map[string]any{"goal": handoff["goal"]}}
+	if stepHandoffRead(context.Background(), f) == "" {
+		t.Fatal("dropped handoff fields passed")
+	}
+}
+
 func TestRefusedCaseFailsWhenAllowed(t *testing.T) {
 	d := decideCase{"x", "routine_go_nogo", map[string]any{"name_ok": true, "action": "write_file"}, ""}
 	if d.run(context.Background(), &fakeCaller{}) == "" {

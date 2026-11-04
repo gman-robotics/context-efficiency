@@ -57,6 +57,8 @@ jobs:
           echo "match ${got}"
       - name: Go unit and integration tests
         run: ./scripts/check-go.sh
+      - name: Local end-to-end over stdio (GMA-543)
+        run: bash scripts/e2e-local.sh
 
   verify-context-efficiency:
     runs-on: ubuntu-latest

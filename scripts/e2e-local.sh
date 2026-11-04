@@ -18,6 +18,8 @@ docker run --rm --platform linux/amd64 \
   -v "${REPO_ROOT}/reports:/out" \
   -e COMMIT="${COMMIT}" \
   "${IMAGE}" bash -euo pipefail -c '
+    command -v python3 >/dev/null || { echo "e2e-local: image needs python3 for ci-prepare-engram.sh" >&2; exit 1; }
+    export GOFLAGS=-buildvcs=false
     cp -a /src /tmp/ce && cd /tmp/ce
     rm -rf adapters/engram/.ci adapters/engram/context-efficiency-mcp
     source scripts/ci-prepare-engram.sh >/dev/null

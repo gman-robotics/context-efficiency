@@ -106,8 +106,12 @@ func stepHandoffRead(ctx context.Context, c Caller) string {
 	if err := json.Unmarshal([]byte(text), &got); err != nil {
 		return "handoff not JSON: " + text
 	}
-	if got["goal"] != handoff["goal"] {
-		return fmt.Sprintf("goal %v, want %v", got["goal"], handoff["goal"])
+	for k := range handoff {
+		g, _ := json.Marshal(got[k])
+		w, _ := json.Marshal(handoff[k])
+		if string(g) != string(w) {
+			return fmt.Sprintf("handoff %s = %s, want %s", k, g, w)
+		}
 	}
 	return ""
 }
