@@ -1,0 +1,22 @@
+[
+  {"id": "pr-t3-infra", "actual": "T3", "pr": {"infra": true}},
+  {"id": "pr-t3-migration", "actual": "T3", "pr": {"migration": true}},
+  {"id": "pr-t3-new-service", "actual": "T3", "pr": {"new_service": true}},
+  {"id": "pr-t3-docs-and-infra", "actual": "T3", "pr": {"docs_only": true, "infra": true}},
+  {"id": "pr-t3-infra-and-module", "actual": "T3", "pr": {"infra": true, "existing_module": true}},
+  {"id": "pr-t2-new-module", "actual": "T2", "pr": {"new_module": true}},
+  {"id": "pr-t2-cross-cutting", "actual": "T2", "pr": {"cross_cutting": true}},
+  {"id": "pr-t2-existing-and-new-module", "actual": "T2", "pr": {"existing_module": true, "new_module": true}},
+  {"id": "pr-t2-cross-and-docs", "actual": "T2", "pr": {"cross_cutting": true, "docs_only": true}},
+  {"id": "pr-t2-new-module-b", "actual": "T2", "pr": {"new_module": true}},
+  {"id": "pr-t1-existing-01", "actual": "T1", "pr": {"existing_module": true}},
+  {"id": "pr-t1-existing-02", "actual": "T1", "pr": {"existing_module": true}},
+  {"id": "pr-t1-existing-03", "actual": "T1", "pr": {"existing_module": true}},
+  {"id": "pr-t1-existing-04", "actual": "T1", "pr": {"existing_module": true}},
+  {"id": "pr-t1-existing-05", "actual": "T1", "pr": {"existing_module": true}},
+  {"id": "pr-t0-docs", "actual": "T0", "pr": {"docs_only": true}},
+  {"id": "pr-t0-check", "actual": "T0", "pr": {"check_only": true}},
+  {"id": "pr-t0-config", "actual": "T0", "pr": {"config_tweak": true}},
+  {"id": "pr-t0-docs-and-check", "actual": "T0", "pr": {"docs_only": true, "check_only": true}},
+  {"id": "pr-t0-config-b", "actual": "T0", "pr": {"config_tweak": true}}
+]

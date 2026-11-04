@@ -1,0 +1,14 @@
+[
+  {"id": "stop-both-count-0", "actual": "continue", "stop": {"same_tool": true, "same_error_class": true, "count": 0, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-both-count-1", "actual": "continue", "stop": {"same_tool": true, "same_error_class": true, "count": 1, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-both-count-2", "actual": "continue", "stop": {"same_tool": true, "same_error_class": true, "count": 2, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-both-count-3", "actual": "stop", "stop": {"same_tool": true, "same_error_class": true, "count": 3, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-both-count-4", "actual": "stop", "stop": {"same_tool": true, "same_error_class": true, "count": 4, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-both-count-5", "actual": "stop", "stop": {"same_tool": true, "same_error_class": true, "count": 5, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-tool-diff-count-3", "actual": "continue", "stop": {"same_tool": false, "same_error_class": true, "count": 3, "tool": "tool_a", "other_tool": "tool_b", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-class-diff-count-3", "actual": "continue", "stop": {"same_tool": true, "same_error_class": false, "count": 3, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_y"}},
+  {"id": "stop-both-diff-count-4", "actual": "continue", "stop": {"same_tool": false, "same_error_class": false, "count": 4, "tool": "tool_a", "other_tool": "tool_b", "error_class": "err_x", "other_error": "err_y"}},
+  {"id": "stop-tool-diff-count-4", "actual": "continue", "stop": {"same_tool": false, "same_error_class": true, "count": 4, "tool": "tool_a", "other_tool": "tool_b", "error_class": "err_x", "other_error": "err_x"}},
+  {"id": "stop-class-diff-count-5", "actual": "continue", "stop": {"same_tool": true, "same_error_class": false, "count": 5, "tool": "tool_a", "other_tool": "tool_a", "error_class": "err_x", "other_error": "err_y"}},
+  {"id": "stop-both-diff-count-5", "actual": "continue", "stop": {"same_tool": false, "same_error_class": false, "count": 5, "tool": "tool_a", "other_tool": "tool_b", "error_class": "err_x", "other_error": "err_y"}}
+]
