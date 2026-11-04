@@ -69,7 +69,7 @@ set -euo pipefail
 
 **CI pass bar:** workflow `.github/workflows/check.yml` — job `markdown-and-links` (`./scripts/check.sh` plus negative scripts), job `go-adapter` (`./scripts/check-go.sh` with engram v3.6.0 linux_amd64 prepared by `scripts/ci-prepare-engram.sh`, then `adapters/engram/.ci/engram` compared to `pin.json` `binary_sha256`), and job `verify-context-efficiency` (`skills/verify-context-efficiency/bin/verify-context-efficiency-ci`) must exit `0`. `workflow_dispatch` workflow `.github/workflows/engram-pin-check.yml` repeats that digest check and does not publish; it is not a pull-request gate.
 
-Shadow units ride `go test ./...` inside `./scripts/check-go.sh`. There is no `laya_live` build tag, and that tag is not a PR gate. `cmd/laya-shadow-report` is not a PR gate. A live miss exits 2 after writing the agreement files. Do not edit fixtures or the rule to lift a score.
+Rule and fixture units (`internal/rules`) ride `go test ./...` inside `./scripts/check-go.sh`. `cmd/plain-decide-report` is not a PR gate. Do not edit fixtures or the rule to lift a score. No Laya code may return to plugin code paths; `./scripts/check.sh` fails on it (GMA-567).
 
 **Gates:** ub-mode crapper/dryer/mutator are not required for this Markdown-first repo; record `N/A` or CI check results on the PR `Gates:` line.
 

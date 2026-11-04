@@ -1,8 +1,8 @@
 # Local end-to-end (GMA-543)
 
-Commit: `d2b05f6cf06d64b2b7b6b8b04918f89f5641e39a`. Server: `context-efficiency-mcp 0.1.0`.
+Commit: `100fb841187c42534c848e0f4ad9aba04e112878`. Server: `context-efficiency-mcp 0.1.0`.
 
-Tools listed: decide, decide_shadow, handoff_read, handoff_write, recall, retain.
+Tools listed: decide, handoff_read, handoff_write, recall, retain.
 
 Result: 15 of 15 steps pass.
 

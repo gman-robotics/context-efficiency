@@ -90,6 +90,15 @@ func TestRefusedCaseFailsWhenAllowed(t *testing.T) {
 	}
 }
 
+func TestCheckTools(t *testing.T) {
+	if err := checkTools([]string{"retain", "recall", "handoff_write", "handoff_read", "decide"}); err != nil {
+		t.Fatal(err)
+	}
+	if checkTools(append([]string{"decide_shadow"}, WantTools...)) == nil {
+		t.Fatal("decide_shadow accepted")
+	}
+}
+
 func TestReportWrite(t *testing.T) {
 	dir := t.TempDir()
 	rep := &Report{Commit: "abc", Server: "s 1", Tools: []string{"recall"}}

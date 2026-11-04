@@ -1,5 +1,5 @@
 // Package decide is the plain deterministic decision layer. It calls the shared
-// rules in package shadow and never calls Laya.
+// rules in package rules.
 package decide
 
 import (
@@ -7,7 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/rules"
 )
 
 // Result is one plain decision. Effect is always none: the caller acts on Label.
@@ -19,7 +19,7 @@ type Result struct {
 }
 
 // Paths lists the paths the plain layer decides. audit_sort is not one of them.
-var Paths = []string{shadow.PathGo, shadow.PathPR, shadow.PathStop}
+var Paths = []string{rules.PathGo, rules.PathPR, rules.PathStop}
 
 // Decide parses features for path and applies the shared rule.
 // Unknown paths, unknown fields, and unmatched shapes are errors starting with "refused:".
@@ -28,7 +28,7 @@ func Decide(path string, features []byte) (Result, error) {
 	if err != nil {
 		return Result{}, fmt.Errorf("refused: %s", err)
 	}
-	crit, err := shadow.Criteria(path)
+	crit, err := rules.Criteria(path)
 	if err != nil {
 		return Result{}, err
 	}
@@ -37,24 +37,24 @@ func Decide(path string, features []byte) (Result, error) {
 
 func apply(path string, raw []byte) (string, error) {
 	switch path {
-	case shadow.PathGo:
-		var f shadow.GoFeatures
+	case rules.PathGo:
+		var f rules.GoFeatures
 		if err := strict(raw, &f); err != nil {
 			return "", err
 		}
-		return shadow.RuleGo(f)
-	case shadow.PathPR:
-		var f shadow.PRFeatures
+		return rules.RuleGo(f)
+	case rules.PathPR:
+		var f rules.PRFeatures
 		if err := strict(raw, &f); err != nil {
 			return "", err
 		}
-		return shadow.RulePR(f)
-	case shadow.PathStop:
-		var f shadow.StopFeatures
+		return rules.RulePR(f)
+	case rules.PathStop:
+		var f rules.StopFeatures
 		if err := strict(raw, &f); err != nil {
 			return "", err
 		}
-		return shadow.RuleStop(f)
+		return rules.RuleStop(f)
 	default:
 		return "", fmt.Errorf("path")
 	}

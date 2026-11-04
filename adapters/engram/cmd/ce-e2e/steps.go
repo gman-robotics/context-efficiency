@@ -87,7 +87,7 @@ func stepRecall(ctx context.Context, c Caller) string {
 var handoff = map[string]any{
 	"goal":      "GMA-543 local e2e",
 	"openItems": []string{"none"},
-	"decisions": []string{"plain decide, no Laya"},
+	"decisions": []string{"plain decide only"},
 	"filePaths": []string{"scripts/e2e-local.sh"},
 	"nextSteps": []string{"Kit runs CE-6"},
 }

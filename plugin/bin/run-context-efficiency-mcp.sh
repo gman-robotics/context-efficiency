@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Launch context-efficiency-mcp (Go adapter). Does not download engram at startup.
-# No Laya and no secret lookup on the plugin path (GMA-551: plain decide; Laya is not in the plugin).
+# No secret lookup on the plugin path (GMA-551, GMA-567: plain decide only).
 set -euo pipefail
 
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"

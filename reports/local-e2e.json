@@ -1,9 +1,8 @@
 {
-  "commit": "d2b05f6cf06d64b2b7b6b8b04918f89f5641e39a",
+  "commit": "100fb841187c42534c848e0f4ad9aba04e112878",
   "server": "context-efficiency-mcp 0.1.0",
   "tools": [
     "decide",
-    "decide_shadow",
     "handoff_read",
     "handoff_write",
     "recall",

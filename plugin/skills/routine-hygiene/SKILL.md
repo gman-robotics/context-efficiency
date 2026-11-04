@@ -2,7 +2,7 @@
 name: routine-hygiene
 description: >-
   Process skill for a routine. Call the plain decide tool and follow its
-  label. Laya shadow is optional and never blocks the routine.
+  label.
 version: 1.0.0
 ---
 
@@ -25,19 +25,9 @@ Go only when the name is ok, the action is `write_file` or `retain_summary`, and
 
 Tool retry uses `decide` with path `tool_failure_stop`. That gate is separate from this step. Stop there only when the same tool, the same error class, and the count is 3 or more.
 
-### Optional Laya shadow
-
-Only when a Laya server is set up outside the plugin: also call `decide_shadow` with the same path and `actual` set to the `decide` label. A Laya miss does not change the routine. Follow `actual`.
-
-- Stop when the error starts with `refused:`.
-- On `laya api key not set`, `laya transport:`, `laya http`, `laya usage truncated`, `laya verdict choice missing`, `laya verdict choice rejected`, `laya response unreadable`, or `laya log:`, continue from `actual`. `laya log:` means the retain failed. It is not a refusal.
-- Every successful result has `effect` `none`.
-
 ## Step 2. Recall
 
 Short `recall` for `routine:<name>`.
-
-Read shadow rows with `recall` and scope `routine:layashadow`. The public cap stays 20. That list is not the pass bit. There is no `shadow_report` tool.
 
 ## Step 3. Work
 
@@ -50,7 +40,6 @@ Do the routine. Put long output in a file. The chat keeps the path and a one-lin
 ## Related
 
 - [Plain decide](../../../docs/plain-decide.md)
-- [Laya shadow contract](../../../docs/laya-shadow.md)
 - [Plan](../../../docs/plan.md)
 - [Tool mapping](../../../docs/tool-mapping.md)
 - [Recall usage](../engram-recall/SKILL.md)

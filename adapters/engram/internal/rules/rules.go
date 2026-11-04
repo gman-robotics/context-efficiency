@@ -1,4 +1,4 @@
-package shadow
+package rules
 
 import (
 	"fmt"
@@ -61,7 +61,7 @@ type Case struct {
 	Audit  AuditFeatures
 }
 
-// Rule is the harness stand-in for the bot. Production decide_shadow does not call it.
+// Rule applies the rule for c.Path. The fixture census test uses it.
 func Rule(c Case) (string, error) {
 	switch c.Path {
 	case PathGo:

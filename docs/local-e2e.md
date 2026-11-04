@@ -11,6 +11,6 @@
 Not covered here:
 
 - The five skills under `plugin/skills/` (the four adapter skills plus `routine-hygiene`) are agent instructions, not executables. The run proves the tools they call work.
-- `decide_shadow` (Laya) is not run. Laya is not in the plugin (GMA-551). No `LAYA_API_KEY` is passed in.
+- The server lists exactly five tools: `decide`, `handoff_read`, `handoff_write`, `recall`, `retain`. The initialize step fails on any other set (GMA-567 removed the shadow tool). No model key is passed in.
 - The CE-6 checks (GMA-430) stay with Kit.
 - Publishing, rename, and repo move are out of scope.

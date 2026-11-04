@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/decide"
-	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/shadow"
+	"github.com/gman-robotics/context-efficiency/adapters/engram/internal/rules"
 )
 
 func main() {
@@ -19,7 +19,7 @@ func main() {
 
 // run exits 0 when every gated path passes, 2 when a gate fails, 1 on error.
 func run(out string, stderr io.Writer) int {
-	cases, err := shadow.LoadFixtures()
+	cases, err := rules.LoadFixtures()
 	if err != nil {
 		fmt.Fprintln(stderr, "plain decide report: fixtures")
 		return 1

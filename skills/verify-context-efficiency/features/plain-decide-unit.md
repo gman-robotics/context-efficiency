@@ -1,6 +1,6 @@
 # Plain decide units
 
-The plain decision layer lives in `adapters/engram/internal/decide` and the `decide` tool in `internal/front`. `go test ./...` under `adapters/engram` runs them. No Laya server is needed.
+The plain decision layer lives in `adapters/engram/internal/decide` and the `decide` tool in `internal/front`. `go test ./...` under `adapters/engram` runs them. No model or server is needed.
 
 ## Sub-features
 

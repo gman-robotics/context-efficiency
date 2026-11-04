@@ -19,6 +19,5 @@ User-facing features for this repo include **plugin manifests**, the **Go Engram
 - [Repository docs](./repo-docs.md) — README and plan are present and linked.
 - [Repo check script](./repo-check-script.md) — `scripts/check.sh` passes (CI parity).
 - [Go engram adapter](./go-engram-adapter.md) — unit tests and optional v3.6.0 integration via `check-go.sh`.
-- [Laya shadow units](./laya-shadow-unit.md) — shadow decision layer unit tests inside `go test ./...`.
 - [Plain decide units](./plain-decide-unit.md) — plain deterministic decide layer and agreement report.
 - [Plugin manifest and MCP config](./plugin-manifest-mcp.md) — plugin.json manifests, `mcp.json`, and MCP launcher script.
